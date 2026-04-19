@@ -154,16 +154,13 @@
     <div class="flex-row" style="margin-top:10px;"><button id="applyOcrDataBtn">Use extracted data</button><button id="closeOcrBtn" class="btn-outline">Close</button></div>
 </div>
 
-<footer>CoC = (VS Week + VS 4W) / (TotalPower*1e6 + F1*1e6 + Heroes + Troops + Tank + Tech) * 100 | IQ = CoC / Level | Click headers to sort | Zebra stripes | OCR updates existing player by name | Use Filter Report for advanced filtering</footer>
+<footer>CoC = (VS Week + VS 4W) / (TotalPower*1e6 + F1*1e6 + Heroes + Troops + Tank + Tech) * 100 | IQ = CoC / Level | Click headers to sort | Zebra stripes | OCR updates existing player by name | Data stored in Google Sheets</footer>
 
 <script>
-    // ==================== CONFIGURACIÓN DE GITHUB ====================
-    // ¡¡¡REEMPLAZA ESTOS VALORES CON LOS TUYOS!!!
-    const GITHUB_TOKEN = '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';      // <-- Pega aquí tu token personal
-    const REPO_OWNER = 'Invenio-DS';          // <-- Tu nombre de usuario de GitHub
-    const REPO_NAME = 'LAST-Z-LGXN';            // <-- El nombre de tu repositorio
-    const FILE_PATH = 'players.json';               // Nombre del archivo donde se guardarán los datos
-    // ================================================================
+    // ==================== CONFIGURACIÓN DE GOOGLE SHEETS ====================
+    // Reemplaza esta URL con la de tu Apps Script desplegado
+    const SHEET_API_URL = 'https://script.google.com/macros/s/AKfycbznCNYNQV4Hj8eLxQ1A6T4u-jfjwu9bfLSNVr1goPaTb7rIavZpbq-eYwy_cc_nsA57ow/exec';
+    // ========================================================================
 
     // Columnas (definición completa)
     const COLUMNS = [
@@ -197,71 +194,37 @@
     let filters = {};
     let filteredPlayers = [];
 
-    // --- FUNCIONES PARA LEER Y ESCRIBIR EN GITHUB ---
-    async function loadPlayersFromGitHub() {
-        const apiUrl = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${FILE_PATH}`;
+    // --- FUNCIONES PARA LEER Y ESCRIBIR EN GOOGLE SHEETS ---
+    async function loadPlayersFromSheet() {
         try {
-            const response = await fetch(apiUrl, {
-                headers: { 'Authorization': `token ${GITHUB_TOKEN}` }
-            });
-            if (response.status === 404) {
-                console.log('Archivo players.json no encontrado. Se creará uno nuevo al guardar.');
-                return [];
-            }
-            if (!response.ok) throw new Error(`Error al leer el archivo: ${response.statusText}`);
+            const response = await fetch(`${SHEET_API_URL}?action=load`);
+            if (!response.ok) throw new Error(`HTTP error ${response.status}`);
             const data = await response.json();
-            const content = atob(data.content);
-            return JSON.parse(content);
+            return Array.isArray(data) ? data : [];
         } catch (error) {
-            console.error('Error al cargar desde GitHub:', error);
+            console.error('Error cargando desde Google Sheets:', error);
             alert('No se pudieron cargar los datos. Revisa la consola.');
             return [];
         }
     }
 
-    async function savePlayersToGitHub(playersToSave) {
-        const apiUrl = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${FILE_PATH}`;
-        const content = btoa(unescape(encodeURIComponent(JSON.stringify(playersToSave, null, 2))));
-        
-        let sha = '';
+    async function savePlayersToSheet(playersToSave) {
         try {
-            const res = await fetch(apiUrl, {
-                headers: { 'Authorization': `token ${GITHUB_TOKEN}` }
+            const response = await fetch(SHEET_API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: new URLSearchParams({ action: 'save', data: JSON.stringify(playersToSave) })
             });
-            if (res.ok) {
-                const data = await res.json();
-                sha = data.sha;
-            }
-        } catch(e) { /* el archivo no existe */ }
-
-        const body = {
-            message: 'Actualización de datos del clan',
-            content: content,
-            sha: sha
-        };
-
-        try {
-            const response = await fetch(apiUrl, {
-                method: 'PUT',
-                headers: {
-                    'Authorization': `token ${GITHUB_TOKEN}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(body)
-            });
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(`Error ${response.status}: ${errorData.message}`);
-            }
-            console.log('Datos guardados correctamente en GitHub');
+            if (!response.ok) throw new Error(`HTTP error ${response.status}`);
+            console.log('Datos guardados correctamente en Google Sheets');
             return true;
         } catch (error) {
-            console.error('Error al guardar en GitHub:', error);
+            console.error('Error guardando en Google Sheets:', error);
             alert(`Error al guardar: ${error.message}`);
             return false;
         }
     }
-    // -------------------------------------------------
+    // -----------------------------------------------------
 
     // Funciones auxiliares
     function formatNumber(num, decimals = 0) {
@@ -273,7 +236,7 @@
     function calculateCocAndIq(p) {
         const totalPowerRaw = p.totalPower * 1_000_000;
         const f1Raw = p.f1Arena * 1_000_000;
-        const denominator = totalPowerRaw + f1Raw + p.heroPower + p.troopsPower + p.tankPower + p.techPower;
+        const denominator = totalPowerRaw + f1Raw + (p.heroPower||0) + (p.troopsPower||0) + (p.tankPower||0) + (p.techPower||0);
         let coc = denominator > 0 ? ((p.vsWeek + p.vs4Week) / denominator) * 100 : 0;
         coc = Math.round(coc * 100) / 100;
         let iq = p.level > 0 ? coc / p.level : 0;
@@ -296,7 +259,7 @@
         }
         applyFilters();
         renderCanyonModal();
-        await savePlayersToGitHub(players);
+        await savePlayersToSheet(players); // Guarda automáticamente tras cada cambio
     }
 
     function applyFilters() {
@@ -493,7 +456,7 @@
     document.getElementById("cancelFormBtn")?.addEventListener("click", () => document.getElementById("formCard").style.display = "none");
     document.getElementById("addNewBtn")?.addEventListener("click", openNewForm);
 
-    // Exportar a Excel
+    // Exportar a Excel (igual que antes)
     function exportToExcel() {
         const title = document.getElementById("reportTitle").value || "STATICS LEGION STORM - LGXN";
         const until = document.getElementById("untilDate").value;
@@ -589,7 +552,7 @@
         reader.readAsArrayBuffer(file);
     });
 
-    // OCR (básico)
+    // OCR (básico, igual que antes)
     let ocrData = null;
     document.getElementById("ocrImageBtn")?.addEventListener("click", () => {
         document.getElementById("ocrCard").style.display = "block";
@@ -842,13 +805,13 @@
     window.addEventListener("click", (e) => { if (e.target === canyonModal) canyonModal.style.display = "none"; });
     window.addEventListener("click", (e) => { if (e.target === document.getElementById("filterModal")) document.getElementById("filterModal").style.display = "none"; });
 
-    // Inicialización: cargar datos desde GitHub
+    // Inicialización: cargar datos desde Google Sheets
     async function initializeApp() {
-        const loadedPlayers = await loadPlayersFromGitHub();
+        const loadedPlayers = await loadPlayersFromSheet();
         if (loadedPlayers && loadedPlayers.length) {
             players = loadedPlayers;
         } else {
-            // Datos de ejemplo por si el archivo está vacío
+            // Datos de ejemplo por si la hoja está vacía
             players = [
                 { level:30, range:"R5", country:"USA", name:"GEORGIABOY", totalPower:248.2, vsWeek:90756875, vs4Week:154564073, f1Arena:123.9, heroPower:60426187, troopsPower:0, tankPower:8548624, techPower:18352969, selectedForCC:"YES", notes:"", team:"T1", zone:"North", coc:0, iq:0 },
                 { level:30, range:"R4", country:"VEN", name:"NETPORTU", totalPower:182.4, vsWeek:62691421, vs4Week:118460712, f1Arena:116.5, heroPower:54156886, troopsPower:0, tankPower:9248041, techPower:18506794, selectedForCC:"YES", notes:"", team:"T1", zone:"South", coc:0, iq:0 },
