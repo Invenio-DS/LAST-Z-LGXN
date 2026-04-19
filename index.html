@@ -128,7 +128,7 @@
     </div>
 </div>
 
-<!-- Modal Canyon Clash (omitido por brevedad, pero igual) -->
+<!-- Modal Canyon Clash -->
 <div id="canyonModal" class="modal">
     <div class="modal-content">
         <div class="modal-header"><h2>Canyon Clash Roster</h2><button class="close-modal" id="closeModalBtn">&times;</button></div>
@@ -157,7 +157,15 @@
 <footer>CoC = (VS Week + VS 4W) / (TotalPower*1e6 + F1*1e6 + Heroes + Troops + Tank + Tech) * 100 | IQ = CoC / Level | Click headers to sort | Zebra stripes | OCR updates existing player by name | Use Filter Report for advanced filtering</footer>
 
 <script>
-    // Columnas con nombres completos y el cambio de "Selected For CC" a "Go Next CC"
+    // ==================== CONFIGURACIÓN DE GITHUB ====================
+    // ¡¡¡REEMPLAZA ESTOS VALORES CON LOS TUYOS!!!
+    const GITHUB_TOKEN = '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';      // <-- Pega aquí tu token personal
+    const REPO_OWNER = 'Invenio-DS';          // <-- Tu nombre de usuario de GitHub
+    const REPO_NAME = 'LAST-Z-LGXN';            // <-- El nombre de tu repositorio
+    const FILE_PATH = 'players.json';               // Nombre del archivo donde se guardarán los datos
+    // ================================================================
+
+    // Columnas (definición completa)
     const COLUMNS = [
         { key: "name", label: "Name", type: "text" },
         { key: "country", label: "Country", type: "text" },
@@ -181,21 +189,81 @@
         { key: "vs4WeekRank", label: "VS 4 Rank", type: "number" },
         { key: "coc", label: "CoC", type: "number" },
         { key: "iq", label: "IQ", type: "number" },
-        { key: "selectedForCC", label: "Go Next CC", type: "select", options: ["YES","NO"] },   // ? Cambiado
+        { key: "selectedForCC", label: "Go Next CC", type: "select", options: ["YES","NO"] },
         { key: "notes", label: "Notes", type: "text" }
     ];
 
-    let players = [
-        { level:30, range:"R5", country:"USA", name:"GEORGIABOY", totalPower:248.2, vsWeek:90756875, vs4Week:154564073, f1Arena:123.9, heroPower:60426187, troopsPower:0, tankPower:8548624, techPower:18352969, selectedForCC:"YES", notes:"", team:"T1", zone:"North", coc:0, iq:0 },
-        { level:30, range:"R4", country:"VEN", name:"NETPORTU", totalPower:182.4, vsWeek:62691421, vs4Week:118460712, f1Arena:116.5, heroPower:54156886, troopsPower:0, tankPower:9248041, techPower:18506794, selectedForCC:"YES", notes:"", team:"T1", zone:"South", coc:0, iq:0 },
-        { level:31, range:"R4", country:"USA", name:"CRACKER2", totalPower:195.2, vsWeek:99149785, vs4Week:146286198, f1Arena:148.6, heroPower:59602324, troopsPower:0, tankPower:9498119, techPower:17170863, selectedForCC:"NO", notes:"", team:"R1", zone:"", coc:0, iq:0 },
-        { level:31, range:"R4", country:"UK", name:"RAFFA10", totalPower:226.6, vsWeek:44332254, vs4Week:88375615, f1Arena:133.4, heroPower:45512343, troopsPower:0, tankPower:6814339, techPower:16858302, selectedForCC:"YES", notes:"", team:"T2", zone:"East", coc:0, iq:0 },
-        { level:30, range:"R3", country:"UK", name:"HALO79", totalPower:232.8, vsWeek:23839992, vs4Week:35758468, f1Arena:100.2, heroPower:58533344, troopsPower:0, tankPower:7959576, techPower:17636832, selectedForCC:"NO", notes:"NEW PLAYER", team:"", zone:"", coc:0, iq:0 }
-    ];
-
+    let players = [];
     let filters = {};
-    let filteredPlayers = [...players];
+    let filteredPlayers = [];
 
+    // --- FUNCIONES PARA LEER Y ESCRIBIR EN GITHUB ---
+    async function loadPlayersFromGitHub() {
+        const apiUrl = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${FILE_PATH}`;
+        try {
+            const response = await fetch(apiUrl, {
+                headers: { 'Authorization': `token ${GITHUB_TOKEN}` }
+            });
+            if (response.status === 404) {
+                console.log('Archivo players.json no encontrado. Se creará uno nuevo al guardar.');
+                return [];
+            }
+            if (!response.ok) throw new Error(`Error al leer el archivo: ${response.statusText}`);
+            const data = await response.json();
+            const content = atob(data.content);
+            return JSON.parse(content);
+        } catch (error) {
+            console.error('Error al cargar desde GitHub:', error);
+            alert('No se pudieron cargar los datos. Revisa la consola.');
+            return [];
+        }
+    }
+
+    async function savePlayersToGitHub(playersToSave) {
+        const apiUrl = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${FILE_PATH}`;
+        const content = btoa(unescape(encodeURIComponent(JSON.stringify(playersToSave, null, 2))));
+        
+        let sha = '';
+        try {
+            const res = await fetch(apiUrl, {
+                headers: { 'Authorization': `token ${GITHUB_TOKEN}` }
+            });
+            if (res.ok) {
+                const data = await res.json();
+                sha = data.sha;
+            }
+        } catch(e) { /* el archivo no existe */ }
+
+        const body = {
+            message: 'Actualización de datos del clan',
+            content: content,
+            sha: sha
+        };
+
+        try {
+            const response = await fetch(apiUrl, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `token ${GITHUB_TOKEN}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(body)
+            });
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(`Error ${response.status}: ${errorData.message}`);
+            }
+            console.log('Datos guardados correctamente en GitHub');
+            return true;
+        } catch (error) {
+            console.error('Error al guardar en GitHub:', error);
+            alert(`Error al guardar: ${error.message}`);
+            return false;
+        }
+    }
+    // -------------------------------------------------
+
+    // Funciones auxiliares
     function formatNumber(num, decimals = 0) {
         if (num === undefined || num === null) return "";
         if (typeof num !== "number") return num;
@@ -213,7 +281,7 @@
         return { coc, iq };
     }
 
-    function updateAllRankings() {
+    async function updateAllRankings() {
         const rankFields = ["totalPower", "f1Arena", "heroPower", "troopsPower", "tankPower", "techPower", "vsWeek", "vs4Week"];
         for (let field of rankFields) {
             const sorted = [...players].sort((a,b) => (b[field] || 0) - (a[field] || 0));
@@ -228,7 +296,7 @@
         }
         applyFilters();
         renderCanyonModal();
-        saveToLocal();
+        await savePlayersToGitHub(players);
     }
 
     function applyFilters() {
@@ -356,7 +424,274 @@
         });
     }
 
-    // -------- Funciones del modal de filtros ----------
+    // Funciones de formulario
+    let editingIndex = -1;
+    function openFormForEdit(idx) {
+        editingIndex = idx;
+        fillFormWithPlayer(players[idx]);
+        document.getElementById("formTitle").innerText = "Edit Player";
+        document.getElementById("formCard").style.display = "block";
+    }
+    function openNewForm() {
+        editingIndex = -1;
+        fillFormWithPlayer({ level:30, range:"R3", country:"", name:"", totalPower:100, vsWeek:0, vs4Week:0, f1Arena:50, heroPower:0, troopsPower:0, tankPower:0, techPower:0, selectedForCC:"NO", notes:"", team:"", zone:"" });
+        document.getElementById("formTitle").innerText = "New Player";
+        document.getElementById("formCard").style.display = "block";
+    }
+    function fillFormWithPlayer(p) {
+        const container = document.getElementById("playerForm");
+        container.innerHTML = "";
+        const fields = ["level","range","country","name","totalPower","f1Arena","heroPower","troopsPower","tankPower","techPower","vsWeek","vs4Week","selectedForCC","notes","team","zone"];
+        const labels = ["Level","Range","Country","Name","Total Power (M)","F1 Arena (M)","Hero Power","Troops Power","Tank Power","Tech Power","VS Week","VS 4 Weeks","Go Next CC","Notes","Team","Zone"];
+        fields.forEach((f,i) => {
+            const div = document.createElement("div");
+            let value = p[f] !== undefined ? p[f] : "";
+            if (f === "selectedForCC") {
+                div.innerHTML = `<label>${labels[i]}</label><select id="field_${f}"><option value="YES">YES</option><option value="NO">NO</option></select>`;
+            } else if (f === "notes") {
+                div.innerHTML = `<label>${labels[i]}</label><select id="field_${f}"><option value="">None</option><option value="PROMOTE TO R2">PROMOTE TO R2</option><option value="PROMOTE TO R3">PROMOTE TO R3</option><option value="DEGRADE TO R2">DEGRADE TO R2</option><option value="DEGRADE TO R1">DEGRADE TO R1</option><option value="SEND TO ACADEMY">SEND TO ACADEMY</option><option value="SEND TO FARM">SEND TO FARM</option><option value="NEW PLAYER">NEW PLAYER</option></select>`;
+            } else if (f === "team") {
+                div.innerHTML = `<label>${labels[i]}</label><select id="field_${f}"><option value="">None</option><option value="T1">T1</option><option value="R1">R1</option><option value="T2">T2</option><option value="R2">R2</option></select>`;
+            } else {
+                div.innerHTML = `<label>${labels[i]}</label><input id="field_${f}" value="${value}" placeholder="${labels[i]}">`;
+            }
+            container.appendChild(div);
+        });
+        document.getElementById("field_selectedForCC").value = p.selectedForCC || "NO";
+        document.getElementById("field_notes").value = p.notes || "";
+        document.getElementById("field_team").value = p.team || "";
+        document.getElementById("field_range").value = p.range || "R3";
+    }
+    function getPlayerFromForm() {
+        return {
+            level: parseFloat(document.getElementById("field_level")?.value) || 0,
+            range: document.getElementById("field_range")?.value || "R3",
+            country: document.getElementById("field_country")?.value || "",
+            name: document.getElementById("field_name")?.value || "",
+            totalPower: parseFloat(document.getElementById("field_totalPower")?.value) || 0,
+            f1Arena: parseFloat(document.getElementById("field_f1Arena")?.value) || 0,
+            heroPower: parseFloat(document.getElementById("field_heroPower")?.value) || 0,
+            troopsPower: parseFloat(document.getElementById("field_troopsPower")?.value) || 0,
+            tankPower: parseFloat(document.getElementById("field_tankPower")?.value) || 0,
+            techPower: parseFloat(document.getElementById("field_techPower")?.value) || 0,
+            vsWeek: parseFloat(document.getElementById("field_vsWeek")?.value) || 0,
+            vs4Week: parseFloat(document.getElementById("field_vs4Week")?.value) || 0,
+            selectedForCC: document.getElementById("field_selectedForCC")?.value || "NO",
+            notes: document.getElementById("field_notes")?.value || "",
+            team: document.getElementById("field_team")?.value || "",
+            zone: document.getElementById("field_zone")?.value || ""
+        };
+    }
+    document.getElementById("savePlayerBtn")?.addEventListener("click", () => {
+        const newPlayer = getPlayerFromForm();
+        if(!newPlayer.name) { alert("Name is required"); return; }
+        if(editingIndex === -1) players.push(newPlayer);
+        else players[editingIndex] = newPlayer;
+        updateAllRankings();
+        document.getElementById("formCard").style.display = "none";
+    });
+    document.getElementById("cancelFormBtn")?.addEventListener("click", () => document.getElementById("formCard").style.display = "none");
+    document.getElementById("addNewBtn")?.addEventListener("click", openNewForm);
+
+    // Exportar a Excel
+    function exportToExcel() {
+        const title = document.getElementById("reportTitle").value || "STATICS LEGION STORM - LGXN";
+        const until = document.getElementById("untilDate").value;
+        const playerSheetData = [[`${title} - Until: ${until}`], []];
+        playerSheetData.push(COLUMNS.map(c => c.label));
+        players.forEach(p => {
+            const row = COLUMNS.map(c => {
+                let val = p[c.key];
+                if (c.key === "selectedForCC") val = p.selectedForCC || "NO";
+                if (c.key === "notes") val = p.notes || "";
+                return val;
+            });
+            playerSheetData.push(row);
+        });
+        const wsPlayers = XLSX.utils.aoa_to_sheet(playerSheetData);
+        wsPlayers['!cols'] = COLUMNS.map(() => ({ wch: 15 }));
+        const canyonHeaders = ["NAME", "RANGE", "F1 TOTAL POWER", "TEAM", "ZONE", "CLASH POINTS", "AVAILABILITY"];
+        const canyonRows = [[`${title} - Canyon Clash - Until: ${until}`], [], canyonHeaders];
+        players.forEach(p => {
+            const clashPoints = p.vsWeek + p.vs4Week;
+            let availability = (p.team === "T1" || p.team === "T2") ? "Available" : (p.team === "R1" || p.team === "R2") ? "Reserve" : "";
+            canyonRows.push([p.name, p.range, p.f1Arena, p.team, p.zone, clashPoints, availability]);
+        });
+        const wsCanyon = XLSX.utils.aoa_to_sheet(canyonRows);
+        wsCanyon['!cols'] = [{wch:20},{wch:8},{wch:15},{wch:8},{wch:12},{wch:15},{wch:12}];
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, wsPlayers, "PLAYERS");
+        XLSX.utils.book_append_sheet(wb, wsCanyon, "CANYON CLASH");
+        XLSX.writeFile(wb, `legion_storm_${until}.xlsx`);
+    }
+    document.getElementById("exportExcelBtn")?.addEventListener("click", exportToExcel);
+    document.getElementById("exportCanyonExcelBtn")?.addEventListener("click", () => {
+        const title = document.getElementById("reportTitle").value;
+        const until = document.getElementById("untilDate").value;
+        const canyonRows = [[`${title} - Canyon Clash - Until: ${until}`], [], ["NAME","RANGE","F1 TOTAL POWER","TEAM","ZONE","CLASH POINTS","AVAILABILITY"]];
+        players.forEach(p => {
+            const clashPoints = p.vsWeek + p.vs4Week;
+            let availability = (p.team === "T1" || p.team === "T2") ? "Available" : (p.team === "R1" || p.team === "R2") ? "Reserve" : "";
+            canyonRows.push([p.name, p.range, p.f1Arena, p.team, p.zone, clashPoints, availability]);
+        });
+        const ws = XLSX.utils.aoa_to_sheet(canyonRows);
+        ws['!cols'] = [{wch:20},{wch:8},{wch:15},{wch:8},{wch:12},{wch:15},{wch:12}];
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "CANYON CLASH");
+        XLSX.writeFile(wb, `canyon_${until}.xlsx`);
+    });
+
+    // PDF
+    document.getElementById("printPdfBtn")?.addEventListener("click", () => {
+        const title = document.getElementById("reportTitle").value;
+        const until = document.getElementById("untilDate").value;
+        document.querySelector('.print-header').innerText = title;
+        document.querySelector('.print-date').innerText = `Until: ${until}`;
+        window.print();
+    });
+
+    // Cargar Excel (soporte para importar)
+    function loadExcelData(arrayBuffer) {
+        const workbook = XLSX.read(arrayBuffer, { type: 'array' });
+        const sheet = workbook.Sheets[workbook.SheetNames[0]];
+        const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "" });
+        if(!rows || rows.length < 3) return;
+        const newPlayers = [];
+        for(let i=2; i<rows.length; i++) {
+            const row = rows[i];
+            if(!row || row.length < 3) continue;
+            const player = {};
+            COLUMNS.forEach((col, idx) => {
+                let val = row[idx];
+                if(val === undefined) val = "";
+                if(["totalPower","f1Arena","heroPower","troopsPower","tankPower","techPower","vsWeek","vs4Week","level"].includes(col.key)) {
+                    val = parseFloat(val) || 0;
+                }
+                player[col.key] = val;
+            });
+            if(player.name && player.name.toString().trim() !== "") {
+                player.team = player.team || "";
+                player.zone = player.zone || "";
+                player.selectedForCC = player.selectedForCC || "NO";
+                player.notes = player.notes || "";
+                newPlayers.push(player);
+            }
+        }
+        if(newPlayers.length) players = newPlayers;
+        updateAllRankings();
+        alert(`Loaded ${players.length} players from Excel.`);
+    }
+    document.getElementById("excelUpload")?.addEventListener("change", (e) => {
+        const file = e.target.files[0];
+        if(!file) return;
+        const reader = new FileReader();
+        reader.onload = (evt) => loadExcelData(evt.target.result);
+        reader.readAsArrayBuffer(file);
+    });
+
+    // OCR (básico)
+    let ocrData = null;
+    document.getElementById("ocrImageBtn")?.addEventListener("click", () => {
+        document.getElementById("ocrCard").style.display = "block";
+        document.getElementById("ocrImageInput").value = "";
+        document.getElementById("ocrPreview").innerHTML = "";
+        document.getElementById("ocrStatus").innerText = "";
+        ocrData = null;
+    });
+    document.getElementById("closeOcrBtn")?.addEventListener("click", () => document.getElementById("ocrCard").style.display = "none");
+    document.getElementById("ocrImageInput")?.addEventListener("change", async (e) => {
+        const file = e.target.files[0];
+        if(!file) return;
+        const statusDiv = document.getElementById("ocrStatus");
+        const previewDiv = document.getElementById("ocrPreview");
+        statusDiv.innerText = "Processing OCR... (10-20 sec)";
+        previewDiv.innerHTML = "";
+        const img = URL.createObjectURL(file);
+        try {
+            const { data: { text } } = await Tesseract.recognize(img, 'spa+eng');
+            const extractedText = text;
+            statusDiv.innerText = "OCR completed. Analyzing...";
+            previewDiv.innerHTML = `<strong>Raw text:</strong><br>${extractedText.replace(/\n/g,'<br>')}`;
+            const lines = extractedText.split(/\r?\n/);
+            let parsed = { name: "", totalPower: 0, techPower: 0, troopsPower: 0, heroPower: 0, tankPower: 0 };
+            for (let line of lines) {
+                let clean = line.trim();
+                if (clean.length > 2 && clean.length < 30 && !/[\d,]{6,}/.test(clean) && !clean.includes("Poder") && !clean.includes("Potencia") && !clean.includes("Detalles")) {
+                    parsed.name = clean;
+                    break;
+                }
+            }
+            function cleanNumber(str) {
+                if (!str) return 0;
+                let cleaned = str.replace(/\./g, '').replace(/,/g, '');
+                let num = parseFloat(cleaned);
+                return isNaN(num) ? 0 : num;
+            }
+            for (let i = 0; i < lines.length; i++) {
+                let line = lines[i];
+                if (!parsed.totalPower) {
+                    let match = line.match(/(\d{1,3}(?:,\d{3})+)/);
+                    if (match) {
+                        let num = cleanNumber(match[1]);
+                        if (num > 100000000 && num < 500000000) parsed.totalPower = num;
+                    }
+                }
+                if (line.includes("Tecnologia") || line.includes("Tecnología")) {
+                    let nextLine = lines[i+1] || "";
+                    let match = nextLine.match(/(\d{1,3}(?:,\d{3})+)/);
+                    if (match) parsed.techPower = cleanNumber(match[1]);
+                }
+                if (line.includes("tropas")) {
+                    let nextLine = lines[i+1] || "";
+                    let match = nextLine.match(/(\d{1,3}(?:,\d{3})+)/);
+                    if (match) parsed.troopsPower = cleanNumber(match[1]);
+                }
+                if (line.includes("Héroe") || line.includes("Heroe")) {
+                    let nextLine = lines[i+1] || "";
+                    let match = nextLine.match(/(\d{1,3}(?:,\d{3})+)/);
+                    if (match) parsed.heroPower = cleanNumber(match[1]);
+                }
+                if (line.includes("vehículo") || line.includes("vehiculo")) {
+                    let nextLine = lines[i+1] || "";
+                    let match = nextLine.match(/(\d{1,3}(?:,\d{3})+)/);
+                    if (match) parsed.tankPower = cleanNumber(match[1]);
+                }
+            }
+            ocrData = parsed;
+            statusDiv.innerHTML = `OCR extracted: Name="${parsed.name}", Total=${parsed.totalPower.toLocaleString()}, Tech=${parsed.techPower.toLocaleString()}, Troops=${parsed.troopsPower.toLocaleString()}, Hero=${parsed.heroPower.toLocaleString()}, Tank=${parsed.tankPower.toLocaleString()}`;
+        } catch(err) { statusDiv.innerText = "OCR error: " + err; }
+        finally { URL.revokeObjectURL(img); }
+    });
+    document.getElementById("applyOcrDataBtn")?.addEventListener("click", () => {
+        if (!ocrData || !ocrData.name) { alert("No valid OCR data."); return; }
+        const normalizedName = ocrData.name.trim().toUpperCase().replace(/Rortu/i, 'PORTU');
+        const existingIndex = players.findIndex(p => p.name.trim().toUpperCase() === normalizedName);
+        if (existingIndex !== -1) {
+            const p = players[existingIndex];
+            if (ocrData.totalPower) p.totalPower = ocrData.totalPower / 1_000_000;
+            if (ocrData.techPower) p.techPower = ocrData.techPower;
+            if (ocrData.troopsPower) p.troopsPower = ocrData.troopsPower;
+            if (ocrData.heroPower) p.heroPower = ocrData.heroPower;
+            if (ocrData.tankPower) p.tankPower = ocrData.tankPower;
+            updateAllRankings();
+            alert(`Player "${ocrData.name}" updated.`);
+            document.getElementById("ocrCard").style.display = "none";
+        } else {
+            openNewForm();
+            setTimeout(() => {
+                if (ocrData.name) document.getElementById("field_name").value = ocrData.name;
+                if (ocrData.totalPower) document.getElementById("field_totalPower").value = ocrData.totalPower / 1_000_000;
+                if (ocrData.techPower) document.getElementById("field_techPower").value = ocrData.techPower;
+                if (ocrData.troopsPower) document.getElementById("field_troopsPower").value = ocrData.troopsPower;
+                if (ocrData.heroPower) document.getElementById("field_heroPower").value = ocrData.heroPower;
+                if (ocrData.tankPower) document.getElementById("field_tankPower").value = ocrData.tankPower;
+                alert("New player created with OCR data. Complete missing fields.");
+            }, 100);
+            document.getElementById("ocrCard").style.display = "none";
+        }
+    });
+
+    // Funciones de los modales (filtros y canyon)
     function buildFilterModal() {
         const container = document.getElementById("filterModalBody");
         container.innerHTML = "";
@@ -440,7 +775,6 @@
         buildFilterModal();
     }
 
-    // Eventos de filtros
     document.getElementById("openFilterModalBtn")?.addEventListener("click", () => {
         buildFilterModal();
         document.getElementById("filterModal").style.display = "flex";
@@ -461,7 +795,7 @@
         resetFilters();
     });
 
-    // -------- Resto de funciones (Canyon, formulario, OCR, exportaci�n) --------
+    // Canyon Clash
     function renderCanyonModal() {
         const tbody = document.getElementById("canyonModalBody");
         if (!tbody) return;
@@ -501,269 +835,6 @@
         document.getElementById("canyonModalStats").innerHTML = `<div class="stat-card">T1: ${t1}</div><div class="stat-card">R1: ${r1}</div><div class="stat-card">T2: ${t2}</div><div class="stat-card">R2: ${r2}</div>`;
     }
 
-    let editingIndex = -1;
-    function openFormForEdit(idx) {
-        editingIndex = idx;
-        fillFormWithPlayer(players[idx]);
-        document.getElementById("formTitle").innerText = "Edit Player";
-        document.getElementById("formCard").style.display = "block";
-    }
-    function openNewForm() {
-        editingIndex = -1;
-        fillFormWithPlayer({ level:30, range:"R3", country:"", name:"", totalPower:100, vsWeek:0, vs4Week:0, f1Arena:50, heroPower:0, troopsPower:0, tankPower:0, techPower:0, selectedForCC:"NO", notes:"", team:"", zone:"" });
-        document.getElementById("formTitle").innerText = "New Player";
-        document.getElementById("formCard").style.display = "block";
-    }
-    function fillFormWithPlayer(p) {
-        const container = document.getElementById("playerForm");
-        container.innerHTML = "";
-        const fields = ["level","range","country","name","totalPower","f1Arena","heroPower","troopsPower","tankPower","techPower","vsWeek","vs4Week","selectedForCC","notes","team","zone"];
-        const labels = ["Level","Range","Country","Name","Total Power (M)","F1 Arena (M)","Hero Power","Troops Power","Tank Power","Tech Power","VS Week","VS 4 Weeks","Go Next CC","Notes","Team","Zone"];
-        fields.forEach((f,i) => {
-            const div = document.createElement("div");
-            let value = p[f] !== undefined ? p[f] : "";
-            if (f === "selectedForCC") {
-                div.innerHTML = `<label>${labels[i]}</label><select id="field_${f}"><option value="YES">YES</option><option value="NO">NO</option></select>`;
-            } else if (f === "notes") {
-                div.innerHTML = `<label>${labels[i]}</label><select id="field_${f}"><option value="">None</option><option value="PROMOTE TO R2">PROMOTE TO R2</option><option value="PROMOTE TO R3">PROMOTE TO R3</option><option value="DEGRADE TO R2">DEGRADE TO R2</option><option value="DEGRADE TO R1">DEGRADE TO R1</option><option value="SEND TO ACADEMY">SEND TO ACADEMY</option><option value="SEND TO FARM">SEND TO FARM</option><option value="NEW PLAYER">NEW PLAYER</option></select>`;
-            } else if (f === "team") {
-                div.innerHTML = `<label>${labels[i]}</label><select id="field_${f}"><option value="">None</option><option value="T1">T1</option><option value="R1">R1</option><option value="T2">T2</option><option value="R2">R2</option></select>`;
-            } else {
-                div.innerHTML = `<label>${labels[i]}</label><input id="field_${f}" value="${value}" placeholder="${labels[i]}">`;
-            }
-            container.appendChild(div);
-        });
-        document.getElementById("field_selectedForCC").value = p.selectedForCC || "NO";
-        document.getElementById("field_notes").value = p.notes || "";
-        document.getElementById("field_team").value = p.team || "";
-        document.getElementById("field_range").value = p.range || "R3";
-    }
-    function getPlayerFromForm() {
-        return {
-            level: parseFloat(document.getElementById("field_level")?.value) || 0,
-            range: document.getElementById("field_range")?.value || "R3",
-            country: document.getElementById("field_country")?.value || "",
-            name: document.getElementById("field_name")?.value || "",
-            totalPower: parseFloat(document.getElementById("field_totalPower")?.value) || 0,
-            f1Arena: parseFloat(document.getElementById("field_f1Arena")?.value) || 0,
-            heroPower: parseFloat(document.getElementById("field_heroPower")?.value) || 0,
-            troopsPower: parseFloat(document.getElementById("field_troopsPower")?.value) || 0,
-            tankPower: parseFloat(document.getElementById("field_tankPower")?.value) || 0,
-            techPower: parseFloat(document.getElementById("field_techPower")?.value) || 0,
-            vsWeek: parseFloat(document.getElementById("field_vsWeek")?.value) || 0,
-            vs4Week: parseFloat(document.getElementById("field_vs4Week")?.value) || 0,
-            selectedForCC: document.getElementById("field_selectedForCC")?.value || "NO",
-            notes: document.getElementById("field_notes")?.value || "",
-            team: document.getElementById("field_team")?.value || "",
-            zone: document.getElementById("field_zone")?.value || ""
-        };
-    }
-    document.getElementById("savePlayerBtn")?.addEventListener("click", () => {
-        const newPlayer = getPlayerFromForm();
-        if(!newPlayer.name) { alert("Name is required"); return; }
-        if(editingIndex === -1) players.push(newPlayer);
-        else players[editingIndex] = newPlayer;
-        updateAllRankings();
-        document.getElementById("formCard").style.display = "none";
-    });
-    document.getElementById("cancelFormBtn")?.addEventListener("click", () => document.getElementById("formCard").style.display = "none");
-    document.getElementById("addNewBtn")?.addEventListener("click", openNewForm);
-
-    function exportToExcel() {
-        const title = document.getElementById("reportTitle").value || "STATICS LEGION STORM - LGXN";
-        const until = document.getElementById("untilDate").value;
-        const playerSheetData = [[`${title} - Until: ${until}`], []];
-        playerSheetData.push(COLUMNS.map(c => c.label));
-        players.forEach(p => {
-            const row = COLUMNS.map(c => {
-                let val = p[c.key];
-                if (c.key === "selectedForCC") val = p.selectedForCC || "NO";
-                if (c.key === "notes") val = p.notes || "";
-                return val;
-            });
-            playerSheetData.push(row);
-        });
-        const wsPlayers = XLSX.utils.aoa_to_sheet(playerSheetData);
-        wsPlayers['!cols'] = COLUMNS.map(() => ({ wch: 15 }));
-        const canyonHeaders = ["NAME", "RANGE", "F1 TOTAL POWER", "TEAM", "ZONE", "CLASH POINTS", "AVAILABILITY"];
-        const canyonRows = [[`${title} - Canyon Clash - Until: ${until}`], [], canyonHeaders];
-        players.forEach(p => {
-            const clashPoints = p.vsWeek + p.vs4Week;
-            let availability = (p.team === "T1" || p.team === "T2") ? "Available" : (p.team === "R1" || p.team === "R2") ? "Reserve" : "";
-            canyonRows.push([p.name, p.range, p.f1Arena, p.team, p.zone, clashPoints, availability]);
-        });
-        const wsCanyon = XLSX.utils.aoa_to_sheet(canyonRows);
-        wsCanyon['!cols'] = [{wch:20},{wch:8},{wch:15},{wch:8},{wch:12},{wch:15},{wch:12}];
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, wsPlayers, "PLAYERS");
-        XLSX.utils.book_append_sheet(wb, wsCanyon, "CANYON CLASH");
-        XLSX.writeFile(wb, `legion_storm_${until}.xlsx`);
-    }
-    document.getElementById("exportExcelBtn")?.addEventListener("click", exportToExcel);
-    document.getElementById("exportCanyonExcelBtn")?.addEventListener("click", () => {
-        const title = document.getElementById("reportTitle").value;
-        const until = document.getElementById("untilDate").value;
-        const canyonRows = [[`${title} - Canyon Clash - Until: ${until}`], [], ["NAME","RANGE","F1 TOTAL POWER","TEAM","ZONE","CLASH POINTS","AVAILABILITY"]];
-        players.forEach(p => {
-            const clashPoints = p.vsWeek + p.vs4Week;
-            let availability = (p.team === "T1" || p.team === "T2") ? "Available" : (p.team === "R1" || p.team === "R2") ? "Reserve" : "";
-            canyonRows.push([p.name, p.range, p.f1Arena, p.team, p.zone, clashPoints, availability]);
-        });
-        const ws = XLSX.utils.aoa_to_sheet(canyonRows);
-        ws['!cols'] = [{wch:20},{wch:8},{wch:15},{wch:8},{wch:12},{wch:15},{wch:12}];
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "CANYON CLASH");
-        XLSX.writeFile(wb, `canyon_${until}.xlsx`);
-    });
-
-    document.getElementById("printPdfBtn")?.addEventListener("click", () => {
-        const title = document.getElementById("reportTitle").value;
-        const until = document.getElementById("untilDate").value;
-        document.querySelector('.print-header').innerText = title;
-        document.querySelector('.print-date').innerText = `Until: ${until}`;
-        window.print();
-    });
-
-    function loadExcelData(arrayBuffer) {
-        const workbook = XLSX.read(arrayBuffer, { type: 'array' });
-        const sheet = workbook.Sheets[workbook.SheetNames[0]];
-        const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "" });
-        if(!rows || rows.length < 3) return;
-        const newPlayers = [];
-        for(let i=2; i<rows.length; i++) {
-            const row = rows[i];
-            if(!row || row.length < 3) continue;
-            const player = {};
-            COLUMNS.forEach((col, idx) => {
-                let val = row[idx];
-                if(val === undefined) val = "";
-                if(["totalPower","f1Arena","heroPower","troopsPower","tankPower","techPower","vsWeek","vs4Week","level"].includes(col.key)) {
-                    val = parseFloat(val) || 0;
-                }
-                player[col.key] = val;
-            });
-            if(player.name && player.name.toString().trim() !== "") {
-                player.team = player.team || "";
-                player.zone = player.zone || "";
-                player.selectedForCC = player.selectedForCC || "NO";
-                player.notes = player.notes || "";
-                newPlayers.push(player);
-            }
-        }
-        if(newPlayers.length) players = newPlayers;
-        updateAllRankings();
-        alert(`Loaded ${players.length} players from Excel.`);
-    }
-    document.getElementById("excelUpload")?.addEventListener("change", (e) => {
-        const file = e.target.files[0];
-        if(!file) return;
-        const reader = new FileReader();
-        reader.onload = (evt) => loadExcelData(evt.target.result);
-        reader.readAsArrayBuffer(file);
-    });
-
-    // OCR (b�sico)
-    let ocrData = null;
-    document.getElementById("ocrImageBtn")?.addEventListener("click", () => {
-        document.getElementById("ocrCard").style.display = "block";
-        document.getElementById("ocrImageInput").value = "";
-        document.getElementById("ocrPreview").innerHTML = "";
-        document.getElementById("ocrStatus").innerText = "";
-        ocrData = null;
-    });
-    document.getElementById("closeOcrBtn")?.addEventListener("click", () => document.getElementById("ocrCard").style.display = "none");
-    document.getElementById("ocrImageInput")?.addEventListener("change", async (e) => {
-        const file = e.target.files[0];
-        if(!file) return;
-        const statusDiv = document.getElementById("ocrStatus");
-        const previewDiv = document.getElementById("ocrPreview");
-        statusDiv.innerText = "Processing OCR... (10-20 sec)";
-        previewDiv.innerHTML = "";
-        const img = URL.createObjectURL(file);
-        try {
-            const { data: { text } } = await Tesseract.recognize(img, 'spa+eng');
-            const extractedText = text;
-            statusDiv.innerText = "OCR completed. Analyzing...";
-            previewDiv.innerHTML = `<strong>Raw text:</strong><br>${extractedText.replace(/\n/g,'<br>')}`;
-            const lines = extractedText.split(/\r?\n/);
-            let parsed = { name: "", totalPower: 0, techPower: 0, troopsPower: 0, heroPower: 0, tankPower: 0 };
-            for (let line of lines) {
-                let clean = line.trim();
-                if (clean.length > 2 && clean.length < 30 && !/[\d,]{6,}/.test(clean) && !clean.includes("Poder") && !clean.includes("Potencia") && !clean.includes("Detalles")) {
-                    parsed.name = clean;
-                    break;
-                }
-            }
-            function cleanNumber(str) {
-                if (!str) return 0;
-                let cleaned = str.replace(/\./g, '').replace(/,/g, '');
-                let num = parseFloat(cleaned);
-                return isNaN(num) ? 0 : num;
-            }
-            for (let i = 0; i < lines.length; i++) {
-                let line = lines[i];
-                if (!parsed.totalPower) {
-                    let match = line.match(/(\d{1,3}(?:,\d{3})+)/);
-                    if (match) {
-                        let num = cleanNumber(match[1]);
-                        if (num > 100000000 && num < 500000000) parsed.totalPower = num;
-                    }
-                }
-                if (line.includes("Tecnologia") || line.includes("Tecnolog�a")) {
-                    let nextLine = lines[i+1] || "";
-                    let match = nextLine.match(/(\d{1,3}(?:,\d{3})+)/);
-                    if (match) parsed.techPower = cleanNumber(match[1]);
-                }
-                if (line.includes("tropas")) {
-                    let nextLine = lines[i+1] || "";
-                    let match = nextLine.match(/(\d{1,3}(?:,\d{3})+)/);
-                    if (match) parsed.troopsPower = cleanNumber(match[1]);
-                }
-                if (line.includes("H�roe") || line.includes("Heroe")) {
-                    let nextLine = lines[i+1] || "";
-                    let match = nextLine.match(/(\d{1,3}(?:,\d{3})+)/);
-                    if (match) parsed.heroPower = cleanNumber(match[1]);
-                }
-                if (line.includes("veh�culo") || line.includes("vehiculo")) {
-                    let nextLine = lines[i+1] || "";
-                    let match = nextLine.match(/(\d{1,3}(?:,\d{3})+)/);
-                    if (match) parsed.tankPower = cleanNumber(match[1]);
-                }
-            }
-            ocrData = parsed;
-            statusDiv.innerHTML = `OCR extracted: Name="${parsed.name}", Total=${parsed.totalPower.toLocaleString()}, Tech=${parsed.techPower.toLocaleString()}, Troops=${parsed.troopsPower.toLocaleString()}, Hero=${parsed.heroPower.toLocaleString()}, Tank=${parsed.tankPower.toLocaleString()}`;
-        } catch(err) { statusDiv.innerText = "OCR error: " + err; }
-        finally { URL.revokeObjectURL(img); }
-    });
-    document.getElementById("applyOcrDataBtn")?.addEventListener("click", () => {
-        if (!ocrData || !ocrData.name) { alert("No valid OCR data."); return; }
-        const normalizedName = ocrData.name.trim().toUpperCase().replace(/Rortu/i, 'PORTU');
-        const existingIndex = players.findIndex(p => p.name.trim().toUpperCase() === normalizedName);
-        if (existingIndex !== -1) {
-            const p = players[existingIndex];
-            if (ocrData.totalPower) p.totalPower = ocrData.totalPower / 1_000_000;
-            if (ocrData.techPower) p.techPower = ocrData.techPower;
-            if (ocrData.troopsPower) p.troopsPower = ocrData.troopsPower;
-            if (ocrData.heroPower) p.heroPower = ocrData.heroPower;
-            if (ocrData.tankPower) p.tankPower = ocrData.tankPower;
-            updateAllRankings();
-            alert(`Player "${ocrData.name}" updated.`);
-            document.getElementById("ocrCard").style.display = "none";
-        } else {
-            openNewForm();
-            setTimeout(() => {
-                if (ocrData.name) document.getElementById("field_name").value = ocrData.name;
-                if (ocrData.totalPower) document.getElementById("field_totalPower").value = ocrData.totalPower / 1_000_000;
-                if (ocrData.techPower) document.getElementById("field_techPower").value = ocrData.techPower;
-                if (ocrData.troopsPower) document.getElementById("field_troopsPower").value = ocrData.troopsPower;
-                if (ocrData.heroPower) document.getElementById("field_heroPower").value = ocrData.heroPower;
-                if (ocrData.tankPower) document.getElementById("field_tankPower").value = ocrData.tankPower;
-                alert("New player created with OCR data. Complete missing fields.");
-            }, 100);
-            document.getElementById("ocrCard").style.display = "none";
-        }
-    });
-
     const canyonModal = document.getElementById("canyonModal");
     document.getElementById("openCanyonModalBtn")?.addEventListener("click", () => { renderCanyonModal(); canyonModal.style.display = "flex"; });
     document.getElementById("closeModalBtn")?.addEventListener("click", () => canyonModal.style.display = "none");
@@ -771,18 +842,25 @@
     window.addEventListener("click", (e) => { if (e.target === canyonModal) canyonModal.style.display = "none"; });
     window.addEventListener("click", (e) => { if (e.target === document.getElementById("filterModal")) document.getElementById("filterModal").style.display = "none"; });
 
-    function saveToLocal() { localStorage.setItem("legionPlayers", JSON.stringify(players)); }
-    function loadFromLocal() {
-        const stored = localStorage.getItem("legionPlayers");
-        if(stored) {
-            try {
-                const parsed = JSON.parse(stored);
-                if(Array.isArray(parsed) && parsed.length) players = parsed;
-                updateAllRankings();
-            } catch(e) {}
-        } else updateAllRankings();
+    // Inicialización: cargar datos desde GitHub
+    async function initializeApp() {
+        const loadedPlayers = await loadPlayersFromGitHub();
+        if (loadedPlayers && loadedPlayers.length) {
+            players = loadedPlayers;
+        } else {
+            // Datos de ejemplo por si el archivo está vacío
+            players = [
+                { level:30, range:"R5", country:"USA", name:"GEORGIABOY", totalPower:248.2, vsWeek:90756875, vs4Week:154564073, f1Arena:123.9, heroPower:60426187, troopsPower:0, tankPower:8548624, techPower:18352969, selectedForCC:"YES", notes:"", team:"T1", zone:"North", coc:0, iq:0 },
+                { level:30, range:"R4", country:"VEN", name:"NETPORTU", totalPower:182.4, vsWeek:62691421, vs4Week:118460712, f1Arena:116.5, heroPower:54156886, troopsPower:0, tankPower:9248041, techPower:18506794, selectedForCC:"YES", notes:"", team:"T1", zone:"South", coc:0, iq:0 },
+                { level:31, range:"R4", country:"USA", name:"CRACKER2", totalPower:195.2, vsWeek:99149785, vs4Week:146286198, f1Arena:148.6, heroPower:59602324, troopsPower:0, tankPower:9498119, techPower:17170863, selectedForCC:"NO", notes:"", team:"R1", zone:"", coc:0, iq:0 },
+                { level:31, range:"R4", country:"UK", name:"RAFFA10", totalPower:226.6, vsWeek:44332254, vs4Week:88375615, f1Arena:133.4, heroPower:45512343, troopsPower:0, tankPower:6814339, techPower:16858302, selectedForCC:"YES", notes:"", team:"T2", zone:"East", coc:0, iq:0 },
+                { level:30, range:"R3", country:"UK", name:"HALO79", totalPower:232.8, vsWeek:23839992, vs4Week:35758468, f1Arena:100.2, heroPower:58533344, troopsPower:0, tankPower:7959576, techPower:17636832, selectedForCC:"NO", notes:"NEW PLAYER", team:"", zone:"", coc:0, iq:0 }
+            ];
+        }
+        updateAllRankings();
     }
-    loadFromLocal();
+
+    initializeApp();
 </script>
 </body>
 </html>
