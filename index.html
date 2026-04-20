@@ -538,7 +538,7 @@
                     td.appendChild(select);
                 } else if (col.key === "notes") {
                     const select = document.createElement("select");
-                    select.innerHTML = `<option value="">None</option><option value="PROMOTE TO R2">PROMOTE TO R2</option><option value="PROMOTE TO R3">PROMOTE TO R3</option><option value="DEGRADE TO R2">DEGRADE TO R2</option><option value="DEGRADE TO R1">DEGRADE TO R1</option><option value="SEND TO ACADEMY">SEND TO ACADEMY</option><option value="SEND TO FARM">SEND TO FARM</option><option value="NEW PLAYER">NEW PLAYER</option>`;
+                    select.innerHTML = `<option value="">None</option><option value="PROMOTE TO R2">PROMOTE TO R2</option><option value="PROMOTE TO R3">PROMOTE TO R3</option><option value="DEGRADE TO R2">DEGRADE TO R2</option><option value="DEGRADE TO R1">DEGRADE TO R1</option><option value="SEND TO ACADEMY">SEND TO ACADEMY</option><option value="SEND TO FARM">SEND TO FARM</option><option value="NEW PLAYER">NEW PLAYER</option><option value="ACTIVE">ACTIVE</option>`;
                     select.value = p.notes || "";
                     select.addEventListener("change", (e) => { p.notes = e.target.value; updateAllRankings(); });
                     td.appendChild(select);
