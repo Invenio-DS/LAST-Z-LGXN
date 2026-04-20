@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>LEGION STORM LGXN MANAGER</title>
     <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <style>
         * { box-sizing: border-box; font-family: system-ui, 'Segoe UI', Roboto, sans-serif; }
         body { background: #0f172a; margin: 0; padding: 15px; color: #e2e8f0; }
@@ -243,17 +242,30 @@
     </div>
 </div>
 
-<!-- OCR Modal -->
-<div class="card" id="ocrCard" style="display:none;">
-    <h3>OCR from Image (Spanish/English)</h3>
-    <input type="file" id="ocrImageInput" accept="image/*">
-    <div id="ocrStatus"></div>
-    <div id="ocrPreview" class="ocr-result"></div>
-    <div id="ocrExtractedData" style="margin-top:10px;"></div>
-    <div class="flex-row" style="margin-top:10px;">
-        <button id="applyOcrVsWeekBtn">Apply as VS Week</button>
-        <button id="applyOcrVs4WeekBtn">Apply as VS 4 Weeks</button>
-        <button id="closeOcrBtn" class="btn-outline">Close</button>
+<!-- OCR Modal (flotante, con OCR.space) -->
+<div id="ocrModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>OCR from Image (OCR.space)</h3>
+            <button class="close-modal" id="closeOcrModalBtn">&times;</button>
+        </div>
+        <div style="margin-bottom: 10px;">
+            <label>OCR.space API Key (free):</label>
+            <input type="text" id="ocrApiKey" placeholder="Enter your API key" style="width: 100%;">
+            <small>Get a free key at <a href="https://ocr.space/ocrapi" target="_blank" style="color:#3b82f6;">ocr.space/ocrapi</a> (250 requests/month)</small>
+        </div>
+        <div>
+            <label>Select image:</label>
+            <input type="file" id="ocrImageInput" accept="image/*">
+        </div>
+        <div id="ocrStatus" style="margin-top: 10px;"></div>
+        <div id="ocrPreview" style="margin-top: 10px; max-height: 150px; overflow: auto; background: #0a0f1a; padding: 8px; border-radius: 8px; font-size: 0.7rem;"></div>
+        <div id="ocrExtractedData" style="margin-top: 10px;"></div>
+        <div class="flex-row" style="margin-top: 15px; justify-content: flex-end;">
+            <button id="applyOcrAllWeekBtn">Apply All to VS Week</button>
+            <button id="applyOcrAll4WeekBtn">Apply All to VS 4 Weeks</button>
+            <button id="closeOcrBtn" class="btn-outline">Close</button>
+        </div>
     </div>
 </div>
 
@@ -300,7 +312,6 @@
     let filteredPlayers = [];
     let vsWeekMin = 12000000;
     let vs4WeekMin = 48000000;
-    let ocrExtracted = { name: "", points: 0 };
     let editingIndex = -1;
 
     // ---------- Google Sheets ----------
@@ -441,8 +452,6 @@
         const rangeCount = {};
         players.forEach(p => { levelCount[p.level] = (levelCount[p.level] || 0) + 1; });
         players.forEach(p => { rangeCount[p.range] = (rangeCount[p.range] || 0) + 1; });
-        
-        // Suma total de jugadores por rango (para mostrar al final)
         const totalRanges = Object.values(rangeCount).reduce((a,b) => a + b, 0);
         
         const countryCount = {};
@@ -639,7 +648,6 @@
                 let options = COUNTRIES.map(c => `<option value="${c}">${c}</option>`).join('');
                 div.innerHTML = `<label>${labels[i]}</label><select id="field_${f}">${options}</select>`;
             } else if (f === "zone") {
-                // Agregar opción "None" además de A,B,C,D
                 div.innerHTML = `<label>${labels[i]}</label><select id="field_${f}"><option value="None">None</option><option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option></select>`;
             } else {
                 div.innerHTML = `<label>${labels[i]}</label><input id="field_${f}" value="${value}" placeholder="${labels[i]}">`;
@@ -783,98 +791,150 @@
         reader.readAsArrayBuffer(file);
     });
 
-    // ---------- OCR ----------
+    // ---------- OCR.space Integration ----------
+    let lastOcrPlayers = []; // store { name, points }
+
+    // Load saved API key
+    const savedApiKey = localStorage.getItem('ocrSpaceApiKey');
+    if (savedApiKey) document.getElementById('ocrApiKey').value = savedApiKey;
+    document.getElementById('ocrApiKey').addEventListener('change', () => {
+        localStorage.setItem('ocrSpaceApiKey', document.getElementById('ocrApiKey').value);
+    });
+
     document.getElementById("ocrImageBtn")?.addEventListener("click", () => {
-        document.getElementById("ocrCard").style.display = "block";
+        document.getElementById("ocrModal").style.display = "flex";
         document.getElementById("ocrImageInput").value = "";
         document.getElementById("ocrPreview").innerHTML = "";
         document.getElementById("ocrStatus").innerText = "";
         document.getElementById("ocrExtractedData").innerHTML = "";
-        ocrExtracted = { name: "", points: 0 };
+        lastOcrPlayers = [];
     });
-    document.getElementById("closeOcrBtn")?.addEventListener("click", () => document.getElementById("ocrCard").style.display = "none");
+    document.getElementById("closeOcrModalBtn")?.addEventListener("click", () => {
+        document.getElementById("ocrModal").style.display = "none";
+    });
+    document.getElementById("closeOcrBtn")?.addEventListener("click", () => {
+        document.getElementById("ocrModal").style.display = "none";
+    });
 
     document.getElementById("ocrImageInput")?.addEventListener("change", async (e) => {
         const file = e.target.files[0];
-        if(!file) return;
+        if (!file) return;
+        const apiKey = document.getElementById('ocrApiKey').value.trim();
+        if (!apiKey) {
+            alert("Please enter your OCR.space API key (get free at ocr.space/ocrapi)");
+            return;
+        }
         const statusDiv = document.getElementById("ocrStatus");
         const previewDiv = document.getElementById("ocrPreview");
         const extractedDiv = document.getElementById("ocrExtractedData");
-        statusDiv.innerText = "Processing OCR... (10-20 sec)";
+        statusDiv.innerText = "Uploading image to OCR.space...";
         previewDiv.innerHTML = "";
         extractedDiv.innerHTML = "";
-        const img = URL.createObjectURL(file);
+        
+        const formData = new FormData();
+        formData.append('apikey', apiKey);
+        formData.append('file', file);
+        formData.append('language', 'eng');
+        formData.append('OCREngine', '2');
+        
         try {
-            const { data: { text } } = await Tesseract.recognize(img, 'spa+eng');
-            const extractedText = text;
-            statusDiv.innerText = "OCR completed. Analyzing...";
-            previewDiv.innerHTML = `<strong>Raw text:</strong><br>${extractedText.replace(/\n/g,'<br>')}`;
-            
-            const lines = extractedText.split(/\r?\n/);
-            let foundName = "";
-            let foundPoints = 0;
-            
-            for (let i = 0; i < lines.length; i++) {
-                let line = lines[i].trim();
-                if (!line) continue;
-                let pointsMatch = line.match(/(\d{1,3}(?:,\d{3})+)/);
-                if (pointsMatch && !foundPoints) {
-                    let points = parseInt(pointsMatch[1].replace(/,/g, ''));
-                    if (!isNaN(points) && points > 1000000) {
-                        foundPoints = points;
-                        if (i > 0 && lines[i-1].trim().length > 2 && !lines[i-1].includes(',')) {
-                            foundName = lines[i-1].trim();
-                        } else {
-                            let beforeNumber = line.substring(0, line.indexOf(pointsMatch[1])).trim();
-                            if (beforeNumber.length > 2) foundName = beforeNumber;
+            const response = await fetch('https://api.ocr.space/parse/image', {
+                method: 'POST',
+                body: formData
+            });
+            const result = await response.json();
+            if (!result.IsErroredOnProcessing) {
+                const parsedText = result.ParsedResults[0].ParsedText;
+                previewDiv.innerHTML = `<strong>OCR Output:</strong><br>${parsedText.replace(/\n/g,'<br>')}`;
+                statusDiv.innerText = "Extracting names and points...";
+                
+                // Parse multiple players
+                const lines = parsedText.split(/\r?\n/);
+                const playersFound = [];
+                let currentName = "";
+                for (let i = 0; i < lines.length; i++) {
+                    let line = lines[i].trim();
+                    if (!line) continue;
+                    // Try to find a number with commas (points)
+                    let pointsMatch = line.match(/(\d{1,3}(?:,\d{3})+)/);
+                    if (pointsMatch) {
+                        let points = parseInt(pointsMatch[1].replace(/,/g, ''));
+                        if (!isNaN(points) && points > 1000000 && currentName) {
+                            playersFound.push({ name: currentName, points: points });
+                            currentName = "";
+                        } else if (points > 1000000) {
+                            // If no previous name, try to extract name from same line before the number
+                            let possibleName = line.substring(0, line.indexOf(pointsMatch[1])).trim();
+                            if (possibleName.length > 2) {
+                                playersFound.push({ name: possibleName, points: points });
+                            } else {
+                                // look back for name
+                                if (i > 0 && lines[i-1].trim().length > 2 && !lines[i-1].match(/\d/)) {
+                                    playersFound.push({ name: lines[i-1].trim(), points: points });
+                                }
+                            }
                         }
-                        break;
+                    } else if (line.length > 2 && !line.match(/[\d,]/) && !line.toLowerCase().includes('point') && !line.toLowerCase().includes('ranking')) {
+                        // potential name
+                        currentName = line;
                     }
                 }
-            }
-            if (!foundName) {
-                for (let line of lines) {
-                    let clean = line.trim();
-                    if (clean.length > 2 && !/[\d,]{6,}/.test(clean) && !clean.includes("Poder") && !clean.includes("Ranking")) {
-                        foundName = clean;
-                        break;
-                    }
+                // Deduplicate by name (case-insensitive)
+                const unique = new Map();
+                for (let p of playersFound) {
+                    const key = p.name.toUpperCase();
+                    if (!unique.has(key)) unique.set(key, p);
                 }
+                lastOcrPlayers = Array.from(unique.values());
+                if (lastOcrPlayers.length === 0) {
+                    extractedDiv.innerHTML = "<strong>No players found. Check image format.</strong>";
+                } else {
+                    let html = "<strong>Detected players:</strong><ul>";
+                    for (let p of lastOcrPlayers) {
+                        html += `<li>${p.name} → ${p.points.toLocaleString()} points</li>`;
+                    }
+                    html += "</ul>";
+                    extractedDiv.innerHTML = html;
+                }
+                statusDiv.innerText = `Found ${lastOcrPlayers.length} players. Use buttons below to apply.`;
+            } else {
+                statusDiv.innerText = "OCR error: " + (result.ErrorMessage || "Unknown error");
             }
-            ocrExtracted = { name: foundName, points: foundPoints };
-            extractedDiv.innerHTML = `<strong>Extracted:</strong> Name: ${foundName || 'Not found'}, Points: ${foundPoints ? foundPoints.toLocaleString() : 'Not found'}`;
-            statusDiv.innerText = "OCR done. Use buttons below to apply points to VS Week or VS 4 Weeks.";
-        } catch(err) {
-            statusDiv.innerText = "OCR error: " + err;
-        } finally {
-            URL.revokeObjectURL(img);
+        } catch (err) {
+            statusDiv.innerText = "Request failed: " + err.message;
         }
     });
 
-    function applyOcrPointsToField(field) {
-        if (!ocrExtracted.name || !ocrExtracted.points) {
-            alert("No valid OCR data. Please run OCR first.");
+    async function applyOcrToField(field) {
+        if (lastOcrPlayers.length === 0) {
+            alert("No OCR data. Please run OCR first.");
             return;
         }
-        const normalizedName = ocrExtracted.name.trim().toUpperCase().replace(/Rortu/i, 'PORTU');
-        const existingIndex = players.findIndex(p => p.name.trim().toUpperCase() === normalizedName);
-        if (existingIndex !== -1) {
-            const player = players[existingIndex];
-            if (field === 'vsWeek') {
-                player.vsWeek = ocrExtracted.points;
-                alert(`Updated ${player.name} VS Week to ${ocrExtracted.points.toLocaleString()}`);
+        let updatedCount = 0;
+        for (let ocr of lastOcrPlayers) {
+            const normalizedName = ocr.name.trim().toUpperCase().replace(/Rortu/i, 'PORTU');
+            const existingIndex = players.findIndex(p => p.name.trim().toUpperCase() === normalizedName);
+            if (existingIndex !== -1) {
+                if (field === 'vsWeek') {
+                    players[existingIndex].vsWeek = ocr.points;
+                } else {
+                    players[existingIndex].vs4Week = ocr.points;
+                }
+                updatedCount++;
             } else {
-                player.vs4Week = ocrExtracted.points;
-                alert(`Updated ${player.name} VS 4 Weeks to ${ocrExtracted.points.toLocaleString()}`);
+                console.log(`Player not found: ${ocr.name}`);
             }
-            updateAllRankings();
-            document.getElementById("ocrCard").style.display = "none";
+        }
+        if (updatedCount > 0) {
+            await updateAllRankings();
+            alert(`Updated ${updatedCount} players (${field === 'vsWeek' ? 'VS Week' : 'VS 4 Weeks'})`);
+            document.getElementById("ocrModal").style.display = "none";
         } else {
-            alert(`Player "${ocrExtracted.name}" not found. Please add manually.`);
+            alert("No matching players found. Check names in image.");
         }
     }
-    document.getElementById("applyOcrVsWeekBtn")?.addEventListener("click", () => applyOcrPointsToField('vsWeek'));
-    document.getElementById("applyOcrVs4WeekBtn")?.addEventListener("click", () => applyOcrPointsToField('vs4Week'));
+    document.getElementById("applyOcrAllWeekBtn")?.addEventListener("click", () => applyOcrToField('vsWeek'));
+    document.getElementById("applyOcrAll4WeekBtn")?.addEventListener("click", () => applyOcrToField('vs4Week'));
 
     // ---------- Filter Modal Functions ----------
     function buildFilterModal() {
@@ -982,7 +1042,6 @@
         players.forEach((p, idx) => {
             const row = document.createElement("tr");
             const clashPoints = p.vsWeek + p.vs4Week;
-            // Zone select con opción "None"
             const zoneOptions = `<option value="None" ${p.zone === "None" ? "selected" : ""}>None</option><option value="A" ${p.zone === "A" ? "selected" : ""}>A</option><option value="B" ${p.zone === "B" ? "selected" : ""}>B</option><option value="C" ${p.zone === "C" ? "selected" : ""}>C</option><option value="D" ${p.zone === "D" ? "selected" : ""}>D</option>`;
             row.innerHTML = `
                 <td>${p.name || ""}</td>
@@ -1050,6 +1109,7 @@
     window.addEventListener("click", (e) => { if (e.target === canyonModal) canyonModal.style.display = "none"; });
     window.addEventListener("click", (e) => { if (e.target === document.getElementById("filterModal")) document.getElementById("filterModal").style.display = "none"; });
     window.addEventListener("click", (e) => { if (e.target === document.getElementById("playerModal")) document.getElementById("playerModal").style.display = "none"; });
+    window.addEventListener("click", (e) => { if (e.target === document.getElementById("ocrModal")) document.getElementById("ocrModal").style.display = "none"; });
 
     // Initialization
     async function initializeApp() {
