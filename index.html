@@ -55,8 +55,8 @@
         th:nth-child(16) { width: 2%; }  /* Tech Rank */
         th:nth-child(17) { width: 6%; }  /* VS Week */
         th:nth-child(18) { width: 2%; }  /* VS Week Rank */
-        th:nth-child(19) { width: 6%; }  /* VS 4 Week */
-        th:nth-child(20) { width: 2%; }  /* VS 4 Rank */
+        th:nth-child(19) { width: 6%; }  /* VS 4 Weeks */
+        th:nth-child(20) { width: 2%; }  /* VS 4W Rank */
         th:nth-child(21) { width: 4%; }  /* CoC */
         th:nth-child(22) { width: 3%; }  /* IQ */
         th:nth-child(23) { width: 4%; }  /* Go Next CC */
@@ -102,7 +102,7 @@
             background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center;
         }
         .modal-content {
-            background: #1e293b; border-radius: 1rem; width: 90%; max-width: 1200px;
+            background: #1e293b; border-radius: 1rem; width: 90%; max-width: 800px;
             max-height: 85vh; overflow: auto; padding: 1rem; border: 1px solid #3b82f6;
         }
         .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
@@ -228,11 +228,19 @@
     </div>
 </div>
 
-<!-- Player Form -->
-<div class="card" id="formCard" style="display:none;">
-    <h3 id="formTitle">Edit Player</h3>
-    <div class="form-grid" id="playerForm"></div>
-    <div class="flex-row" style="margin-top:15px;"><button id="savePlayerBtn">Save</button><button id="cancelFormBtn" class="btn-outline">Cancel</button></div>
+<!-- Player Modal (New/Edit) -->
+<div id="playerModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="playerModalTitle">Edit Player</h3>
+            <button class="close-modal" id="closePlayerModalBtn">&times;</button>
+        </div>
+        <div class="form-grid" id="playerForm"></div>
+        <div class="flex-row" style="margin-top:15px; justify-content: flex-end;">
+            <button id="savePlayerBtn">Save</button>
+            <button id="cancelPlayerBtn" class="btn-outline">Cancel</button>
+        </div>
+    </div>
 </div>
 
 <!-- OCR Modal -->
@@ -248,8 +256,6 @@
         <button id="closeOcrBtn" class="btn-outline">Close</button>
     </div>
 </div>
-
-<footer>CoC = (VS Week + VS 4W) / (TotalPower*1e6 + F1*1e6 + Heros + Troops + Tank + Tech) * 100 | IQ = CoC / Level | Click headers to sort | Zebra stripes</footer>
 
 <script>
     // ==================== GOOGLE SHEETS CONFIG ====================
@@ -295,6 +301,7 @@
     let vsWeekMin = 12000000;
     let vs4WeekMin = 48000000;
     let ocrExtracted = { name: "", points: 0 };
+    let editingIndex = -1;
 
     // ---------- Google Sheets ----------
     async function loadPlayersFromSheet() {
@@ -435,6 +442,9 @@
         players.forEach(p => { levelCount[p.level] = (levelCount[p.level] || 0) + 1; });
         players.forEach(p => { rangeCount[p.range] = (rangeCount[p.range] || 0) + 1; });
         
+        // Suma total de jugadores por rango (para mostrar al final)
+        const totalRanges = Object.values(rangeCount).reduce((a,b) => a + b, 0);
+        
         const countryCount = {};
         players.forEach(p => { countryCount[p.country] = (countryCount[p.country] || 0) + 1; });
         const countryPercent = Object.entries(countryCount).map(([c, cnt]) => `${c}: ${cnt} (${(cnt/totalPlayers*100).toFixed(1)}%)`).join(', ');
@@ -469,6 +479,7 @@
             </div>
             <div class="stat-card"><h3>🏅 Range Distribution</h3>
                 ${Object.entries(rangeCount).map(([rng, cnt]) => `<p>${rng}: ${cnt} (${(cnt/totalPlayers*100).toFixed(1)}%)</p>`).join('')}
+                <p><strong>Total: ${totalRanges}</strong></p>
             </div>
             <div class="stat-card"><h3>🎯 VS Week Performance (min ${formatNumber(vsWeekMin,0)})</h3>
                 <p>✅ Met: ${vsWeekMet} (${(vsWeekMet/totalPlayers*100).toFixed(1)}%)</p>
@@ -595,18 +606,18 @@
         });
     }
 
-    let editingIndex = -1;
+    // ---------- Player Modal (New/Edit) ----------
     function openFormForEdit(idx) {
         editingIndex = idx;
         fillFormWithPlayer(players[idx]);
-        document.getElementById("formTitle").innerText = "Edit Player";
-        document.getElementById("formCard").style.display = "block";
+        document.getElementById("playerModalTitle").innerText = "Edit Player";
+        document.getElementById("playerModal").style.display = "flex";
     }
     function openNewForm() {
         editingIndex = -1;
         fillFormWithPlayer({ level:30, range:"R3", country:"USA", name:"", totalPower:100, vsWeek:0, vs4Week:0, f1Arena:50, heroPower:0, troopsPower:0, tankPower:0, techPower:0, selectedForCC:"NO", notes:"", team:"", zone:"A", availability:"Available" });
-        document.getElementById("formTitle").innerText = "New Player";
-        document.getElementById("formCard").style.display = "block";
+        document.getElementById("playerModalTitle").innerText = "New Player";
+        document.getElementById("playerModal").style.display = "flex";
     }
     function fillFormWithPlayer(p) {
         const container = document.getElementById("playerForm");
@@ -628,7 +639,8 @@
                 let options = COUNTRIES.map(c => `<option value="${c}">${c}</option>`).join('');
                 div.innerHTML = `<label>${labels[i]}</label><select id="field_${f}">${options}</select>`;
             } else if (f === "zone") {
-                div.innerHTML = `<label>${labels[i]}</label><select id="field_${f}"><option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option></select>`;
+                // Agregar opción "None" además de A,B,C,D
+                div.innerHTML = `<label>${labels[i]}</label><select id="field_${f}"><option value="None">None</option><option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option></select>`;
             } else {
                 div.innerHTML = `<label>${labels[i]}</label><input id="field_${f}" value="${value}" placeholder="${labels[i]}">`;
             }
@@ -667,9 +679,14 @@
         if(editingIndex === -1) players.push(newPlayer);
         else players[editingIndex] = newPlayer;
         updateAllRankings();
-        document.getElementById("formCard").style.display = "none";
+        document.getElementById("playerModal").style.display = "none";
     });
-    document.getElementById("cancelFormBtn")?.addEventListener("click", () => document.getElementById("formCard").style.display = "none");
+    document.getElementById("cancelPlayerBtn")?.addEventListener("click", () => {
+        document.getElementById("playerModal").style.display = "none";
+    });
+    document.getElementById("closePlayerModalBtn")?.addEventListener("click", () => {
+        document.getElementById("playerModal").style.display = "none";
+    });
     document.getElementById("addNewBtn")?.addEventListener("click", openNewForm);
 
     function exportToExcel() {
@@ -965,12 +982,14 @@
         players.forEach((p, idx) => {
             const row = document.createElement("tr");
             const clashPoints = p.vsWeek + p.vs4Week;
+            // Zone select con opción "None"
+            const zoneOptions = `<option value="None" ${p.zone === "None" ? "selected" : ""}>None</option><option value="A" ${p.zone === "A" ? "selected" : ""}>A</option><option value="B" ${p.zone === "B" ? "selected" : ""}>B</option><option value="C" ${p.zone === "C" ? "selected" : ""}>C</option><option value="D" ${p.zone === "D" ? "selected" : ""}>D</option>`;
             row.innerHTML = `
                 <td>${p.name || ""}</td>
                 <td>${p.range || ""}</td>
                 <td>${formatNumber(p.f1Arena, 1)}</td>
                 <td><select class="canyon-team" data-idx="${idx}"><option value="">None</option><option value="T1" ${p.team === "T1" ? "selected" : ""}>T1</option><option value="R1" ${p.team === "R1" ? "selected" : ""}>R1</option><option value="T2" ${p.team === "T2" ? "selected" : ""}>T2</option><option value="R2" ${p.team === "R2" ? "selected" : ""}>R2</option></select></td>
-                <td><select class="canyon-zone" data-idx="${idx}"><option value="A" ${p.zone === "A" ? "selected" : ""}>A</option><option value="B" ${p.zone === "B" ? "selected" : ""}>B</option><option value="C" ${p.zone === "C" ? "selected" : ""}>C</option><option value="D" ${p.zone === "D" ? "selected" : ""}>D</option></select></td>
+                <td><select class="canyon-zone" data-idx="${idx}">${zoneOptions}</select></td>
                 <td><input type="number" class="canyon-clashpoints" data-idx="${idx}" value="${clashPoints}" style="width:100px;" disabled></td>
                 <td><select class="canyon-availability" data-idx="${idx}"><option value="Available" ${p.availability === "Available" ? "selected" : ""}>Available</option><option value="To Confirme" ${p.availability === "To Confirme" ? "selected" : ""}>To Confirme</option><option value="Fixed" ${p.availability === "Fixed" ? "selected" : ""}>Fixed</option><option value="Reserve" ${p.availability === "Reserve" ? "selected" : ""}>Reserve</option><option value="No Participate" ${p.availability === "No Participate" ? "selected" : ""}>No Participate</option><option value="No Show" ${p.availability === "No Show" ? "selected" : ""}>No Show</option></select></td>
                 <td><button class="saveCanyonModalBtn" data-idx="${idx}">Save</button></td>
@@ -1030,6 +1049,7 @@
     document.getElementById("syncCanyonModalBtn")?.addEventListener("click", () => renderCanyonModal());
     window.addEventListener("click", (e) => { if (e.target === canyonModal) canyonModal.style.display = "none"; });
     window.addEventListener("click", (e) => { if (e.target === document.getElementById("filterModal")) document.getElementById("filterModal").style.display = "none"; });
+    window.addEventListener("click", (e) => { if (e.target === document.getElementById("playerModal")) document.getElementById("playerModal").style.display = "none"; });
 
     // Initialization
     async function initializeApp() {
