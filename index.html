@@ -30,39 +30,79 @@
         input, select, textarea { background: #0f172a; border: 1px solid #475569; padding: 6px 10px; border-radius: 12px; color: white; width: 100%; font-size: 0.8rem; }
         .form-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; }
         .table-wrapper { overflow-x: auto; border-radius: 1rem; }
-        table { width: 100%; border-collapse: collapse; font-size: 0.7rem; table-layout: auto; }
-        th, td { border: 1px solid #334155; padding: 6px 4px; text-align: left; vertical-align: middle; word-break: break-word; overflow-wrap: break-word; }
-        th { background: #0f172a; position: sticky; top: 0; cursor: pointer; user-select: none; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.7rem;
+            table-layout: fixed;
+        }
+        /* Anchos personalizados */
+        th:nth-child(1) { width: 10%; }  /* Name */
+        th:nth-child(2) { width: 4%; }   /* Country */
+        th:nth-child(3) { width: 2%; }   /* Level */
+        th:nth-child(4) { width: 3%; }   /* Range */
+        th:nth-child(5) { width: 4%; }   /* Total Power */
+        th:nth-child(6) { width: 2%; }   /* Total Rank */
+        th:nth-child(7) { width: 4%; }   /* F1 Total Power */
+        th:nth-child(8) { width: 2%; }   /* F1 Rank */
+        th:nth-child(9) { width: 5%; }   /* Heros Power */
+        th:nth-child(10) { width: 2%; }  /* Heros Rank */
+        th:nth-child(11) { width: 5%; }  /* Troops Power */
+        th:nth-child(12) { width: 2%; }  /* Troops Rank */
+        th:nth-child(13) { width: 5%; }  /* Tank Power */
+        th:nth-child(14) { width: 2%; }  /* Tank Rank */
+        th:nth-child(15) { width: 5%; }  /* Tech Power */
+        th:nth-child(16) { width: 2%; }  /* Tech Rank */
+        th:nth-child(17) { width: 6%; }  /* VS Week */
+        th:nth-child(18) { width: 2%; }  /* VS Week Rank */
+        th:nth-child(19) { width: 6%; }  /* VS 4 Week */
+        th:nth-child(20) { width: 2%; }  /* VS 4 Rank */
+        th:nth-child(21) { width: 4%; }  /* CoC */
+        th:nth-child(22) { width: 3%; }  /* IQ */
+        th:nth-child(23) { width: 4%; }  /* Go Next CC */
+        th:nth-child(24) { width: 9%; }  /* Notes */
+        th:nth-child(25) { width: 5%; }  /* Actions */
+
+        th, td {
+            border: 1px solid #334155;
+            padding: 6px 4px;
+            text-align: center;
+            vertical-align: middle;
+            word-break: break-word;
+            overflow-wrap: break-word;
+        }
+        th {
+            background: #0f172a;
+            position: sticky;
+            top: 0;
+            cursor: pointer;
+            user-select: none;
+        }
         tbody tr:nth-child(odd) { background-color: #2d3748; }
         tbody tr:nth-child(even) { background-color: #1e293b; }
         .coc-green { background-color: #15803d; color: white; font-weight: bold; }
         .coc-blue { background-color: #1e3a8a; color: white; }
         .coc-yellow { background-color: #a16207; color: white; }
         .coc-red { background-color: #991b1b; color: white; }
-        .ocr-result { background: #0a0f1a; padding: 10px; border-radius: 12px; font-family: monospace; font-size: 0.7rem; margin-top: 10px; white-space: pre-wrap; max-height: 200px; overflow: auto; }
-        footer { text-align: center; margin-top: 1.5rem; font-size: 0.7rem; color: #64748b; }
-        @media print {
-            body { background: white; padding: 0; margin: 0; }
-            .container { margin: 0; padding: 5px; max-width: none; }
-            .title-config, .flex-row, .modal, #formCard, #ocrCard, footer, button, .btn-like, .btn-outline, .btn-danger {
-                display: none !important;
-            }
-            .print-header, .print-date { display: block !important; text-align: center; margin-bottom: 8px; }
-            .print-header { font-size: 14pt; font-weight: bold; }
-            .print-date { font-size: 10pt; }
-            .card { background: white; border: 1px solid #ccc; padding: 0; }
-            table { font-size: 8pt; width: 100%; border-collapse: collapse; }
-            th, td { border: 1px solid #000; padding: 3px; }
-            tbody tr:nth-child(odd) { background-color: #f2f2f2; }
-            tbody tr:nth-child(even) { background-color: #ffffff; }
-            .coc-green, .coc-blue, .coc-yellow, .coc-red { background-color: #eee !important; color: black !important; }
+        .vs-met { background-color: #15803d; color: white; font-weight: bold; }
+        .vs-close { background-color: #2563eb; color: white; }
+        .vs-fail { background-color: #991b1b; color: white; }
+        .stats-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 15px; margin-bottom: 20px;
         }
+        .stat-card {
+            background: #0f172a; border-radius: 1rem; padding: 10px 15px; border: 1px solid #334155;
+        }
+        .stat-card h3 { margin: 0 0 8px 0; font-size: 0.9rem; color: #94a3b8; }
+        .stat-card p { margin: 4px 0; font-size: 0.75rem; }
+        .stat-number { font-size: 1.1rem; font-weight: bold; color: #3b82f6; }
+        .print-header, .print-date { display: none; }
         .modal {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center;
         }
         .modal-content {
-            background: #1e293b; border-radius: 1rem; width: 90%; max-width: 800px;
+            background: #1e293b; border-radius: 1rem; width: 90%; max-width: 1200px;
             max-height: 85vh; overflow: auto; padding: 1rem; border: 1px solid #3b82f6;
         }
         .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
@@ -74,9 +114,24 @@
         .filter-item label { display: block; font-size: 0.7rem; margin-bottom: 4px; color: #94a3b8; font-weight: bold; }
         .filter-item .range { display: flex; gap: 8px; }
         .filter-item .range input { width: 50%; }
-        .stats { display: flex; gap: 15px; flex-wrap: wrap; margin-top: 10px; }
-        .stat-card { background: #0f172a; padding: 4px 12px; border-radius: 30px; font-size: 0.75rem; }
-        .print-header, .print-date { display: none; }
+        @media print {
+            body { background: white; padding: 0; margin: 0; }
+            .container { margin: 0; padding: 5px; max-width: none; }
+            .title-config, .flex-row, .modal, #formCard, #ocrCard, footer, button, .btn-like, .btn-outline, .btn-danger, .filter-row {
+                display: none !important;
+            }
+            .print-header, .print-date { display: block !important; text-align: center; margin-bottom: 8px; }
+            .print-header { font-size: 14pt; font-weight: bold; }
+            .print-date { font-size: 10pt; }
+            .card { background: white; border: 1px solid #ccc; padding: 0; }
+            table { font-size: 8pt; width: 100%; border-collapse: collapse; }
+            th, td { border: 1px solid #000; padding: 3px; }
+            tbody tr:nth-child(odd) { background-color: #f2f2f2; }
+            tbody tr:nth-child(even) { background-color: #ffffff; }
+            .coc-green, .coc-blue, .coc-yellow, .coc-red, .vs-met, .vs-close, .vs-fail {
+                background-color: #eee !important; color: black !important;
+            }
+        }
     </style>
 </head>
 <body>
@@ -89,6 +144,25 @@
         <div><button id="printPdfBtn" style="background:#10b981;">Export to PDF</button></div>
     </div>
     <h1>LEGION STORM LGXN MANAGER</h1>
+    
+    <div class="card" id="vsControlPanel">
+        <div style="display: flex; gap: 20px; align-items: flex-end; flex-wrap: wrap;">
+            <div>
+                <label style="display: block; margin-bottom: 5px;">🎯 GOAL Vs Last Week (minimum):</label>
+                <input type="number" id="minVsWeek" value="12000000" step="1000000" style="width: 180px;">
+            </div>
+            <div>
+                <label style="display: block; margin-bottom: 5px;">🎯 GOAL Vs 4 Weeks (minimum):</label>
+                <input type="number" id="minVs4Week" value="48000000" step="1000000" style="width: 180px;">
+            </div>
+            <div>
+                <button id="applyVsThresholdsBtn" style="background: #10b981;">Apply Goals</button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="stats-grid" id="statsContainer"></div>
+    
     <div class="card">
         <div class="flex-row">
             <div>
@@ -113,7 +187,7 @@
     </div>
 </div>
 
-<!-- Modal de filtros -->
+<!-- Filter Modal -->
 <div id="filterModal" class="modal">
     <div class="modal-content">
         <div class="modal-header">
@@ -128,52 +202,77 @@
     </div>
 </div>
 
-<!-- Modal Canyon Clash -->
+<!-- Canyon Clash Modal -->
 <div id="canyonModal" class="modal">
     <div class="modal-content">
-        <div class="modal-header"><h2>Canyon Clash Roster</h2><button class="close-modal" id="closeModalBtn">&times;</button></div>
-        <div class="flex-row"><button id="exportCanyonExcelBtn" class="btn-outline">Export Canyon to Excel</button><button id="syncCanyonModalBtn" class="btn-outline">Sync from Players</button></div>
-        <div class="table-wrapper"><table id="canyonModalTable"><thead><tr><th>Name</th><th>Range</th><th>F1 Total Power</th><th>Team</th><th>Zone</th><th>Clash Points</th><th>Availability</th><th>Actions</th></tr></thead><tbody id="canyonModalBody"></tbody></table></div>
+        <div class="modal-header">
+            <h2>Canyon Clash Roster</h2>
+            <div>
+                <button id="printCanyonPdfBtn" class="btn-outline" style="margin-right:10px;">Print PDF</button>
+                <button class="close-modal" id="closeModalBtn">&times;</button>
+            </div>
+        </div>
+        <div class="flex-row">
+            <button id="exportCanyonExcelBtn" class="btn-outline">Export Canyon to Excel</button>
+            <button id="syncCanyonModalBtn" class="btn-outline">Sync from Players</button>
+        </div>
+        <div class="table-wrapper">
+            <table id="canyonModalTable">
+                <thead>
+                    <tr><th>Name</th><th>Range</th><th>F1 Total Power</th><th>Team</th><th>Zone</th><th>Clash Points</th><th>Availability</th><th>Actions</th></tr>
+                </thead>
+                <tbody id="canyonModalBody"></tbody>
+            </table>
+        </div>
         <div class="stats" id="canyonModalStats"></div>
     </div>
 </div>
 
-<!-- Formulario jugador -->
+<!-- Player Form -->
 <div class="card" id="formCard" style="display:none;">
     <h3 id="formTitle">Edit Player</h3>
     <div class="form-grid" id="playerForm"></div>
     <div class="flex-row" style="margin-top:15px;"><button id="savePlayerBtn">Save</button><button id="cancelFormBtn" class="btn-outline">Cancel</button></div>
 </div>
 
-<!-- OCR modal -->
+<!-- OCR Modal -->
 <div class="card" id="ocrCard" style="display:none;">
     <h3>OCR from Image (Spanish/English)</h3>
     <input type="file" id="ocrImageInput" accept="image/*">
     <div id="ocrStatus"></div>
     <div id="ocrPreview" class="ocr-result"></div>
-    <div class="flex-row" style="margin-top:10px;"><button id="applyOcrDataBtn">Use extracted data</button><button id="closeOcrBtn" class="btn-outline">Close</button></div>
+    <div id="ocrExtractedData" style="margin-top:10px;"></div>
+    <div class="flex-row" style="margin-top:10px;">
+        <button id="applyOcrVsWeekBtn">Apply as VS Week</button>
+        <button id="applyOcrVs4WeekBtn">Apply as VS 4 Weeks</button>
+        <button id="closeOcrBtn" class="btn-outline">Close</button>
+    </div>
 </div>
 
-<footer>CoC = (VS Week + VS 4W) / (TotalPower*1e6 + F1*1e6 + Heroes + Troops + Tank + Tech) * 100 | IQ = CoC / Level | Click headers to sort | Zebra stripes | OCR updates existing player by name | Data stored in Google Sheets</footer>
+<footer>CoC = (VS Week + VS 4W) / (TotalPower*1e6 + F1*1e6 + Heros + Troops + Tank + Tech) * 100 | IQ = CoC / Level | Click headers to sort | Zebra stripes</footer>
 
 <script>
-    // ==================== CONFIGURACIÓN DE GOOGLE SHEETS ====================
-    // Reemplaza esta URL con la de tu Apps Script desplegado
+    // ==================== GOOGLE SHEETS CONFIG ====================
     const SHEET_API_URL = 'https://script.google.com/macros/s/AKfycbznCNYNQV4Hj8eLxQ1A6T4u-jfjwu9bfLSNVr1goPaTb7rIavZpbq-eYwy_cc_nsA57ow/exec';
-    // ========================================================================
+    // =============================================================
 
-    // Columnas (definición completa)
+    const COUNTRIES = [
+        "USA", "IND", "UK", "BRA", "ARG", "CAN", "PAK", "MEX", "FRA", "ITA", "VEN", "HON", "TUR", "FIN", "ECU",
+        "AUS", "POL", "NZL", "ICE", "GER", "TRI", "JAM", "PHI", "JOR", "PER", "COL", "TAI", "CHI", "JAP", "KOR",
+        "ESP", "NED", "BEL", "SUI", "SWE", "NOR", "DEN", "RUS", "CHN", "SAU", "UAE", "ISR", "EGY", "MAR", "NOC"
+    ];
+    
     const COLUMNS = [
         { key: "name", label: "Name", type: "text" },
-        { key: "country", label: "Country", type: "text" },
+        { key: "country", label: "Country", type: "select", options: COUNTRIES },
         { key: "level", label: "Level", type: "number" },
         { key: "range", label: "Range", type: "select", options: ["R5","R4","R3","R2","R1"] },
         { key: "totalPower", label: "Total Power (M)", type: "number" },
         { key: "totalPowerRank", label: "Total Rank", type: "number" },
         { key: "f1Arena", label: "F1 Total Power (M)", type: "number" },
         { key: "f1ArenaRank", label: "F1 Rank", type: "number" },
-        { key: "heroPower", label: "Heroes Power", type: "number" },
-        { key: "heroPowerRank", label: "Heroes Rank", type: "number" },
+        { key: "heroPower", label: "Heros Power", type: "number" },
+        { key: "heroPowerRank", label: "Heros Rank", type: "number" },
         { key: "troopsPower", label: "Troops Power", type: "number" },
         { key: "troopsPowerRank", label: "Troops Rank", type: "number" },
         { key: "tankPower", label: "Tank Power", type: "number" },
@@ -182,8 +281,8 @@
         { key: "techPowerRank", label: "Tech Rank", type: "number" },
         { key: "vsWeek", label: "VS Week", type: "number" },
         { key: "vsWeekRank", label: "VS Week Rank", type: "number" },
-        { key: "vs4Week", label: "VS 4 Week", type: "number" },
-        { key: "vs4WeekRank", label: "VS 4 Rank", type: "number" },
+        { key: "vs4Week", label: "VS 4 Weeks", type: "number" },
+        { key: "vs4WeekRank", label: "VS 4W Rank", type: "number" },
         { key: "coc", label: "CoC", type: "number" },
         { key: "iq", label: "IQ", type: "number" },
         { key: "selectedForCC", label: "Go Next CC", type: "select", options: ["YES","NO"] },
@@ -193,40 +292,38 @@
     let players = [];
     let filters = {};
     let filteredPlayers = [];
+    let vsWeekMin = 12000000;
+    let vs4WeekMin = 48000000;
+    let ocrExtracted = { name: "", points: 0 };
 
-    // --- FUNCIONES PARA LEER Y ESCRIBIR EN GOOGLE SHEETS ---
+    // ---------- Google Sheets ----------
     async function loadPlayersFromSheet() {
         try {
+            console.log("Loading from Google Sheets...");
             const response = await fetch(`${SHEET_API_URL}?action=load`);
-            if (!response.ok) throw new Error(`HTTP error ${response.status}`);
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
             const data = await response.json();
+            console.log("Data loaded:", data);
             return Array.isArray(data) ? data : [];
         } catch (error) {
-            console.error('Error cargando desde Google Sheets:', error);
-            alert('No se pudieron cargar los datos. Revisa la consola.');
+            console.error('Error loading from Google Sheets:', error);
+            alert("Error loading data from Google Sheets. Check console and URL.");
             return [];
         }
     }
-
     async function savePlayersToSheet(playersToSave) {
         try {
-            const response = await fetch(SHEET_API_URL, {
+            await fetch(SHEET_API_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                 body: new URLSearchParams({ action: 'save', data: JSON.stringify(playersToSave) })
             });
-            if (!response.ok) throw new Error(`HTTP error ${response.status}`);
-            console.log('Datos guardados correctamente en Google Sheets');
-            return true;
+            console.log("Saved to Google Sheets");
         } catch (error) {
-            console.error('Error guardando en Google Sheets:', error);
-            alert(`Error al guardar: ${error.message}`);
-            return false;
+            console.error('Error saving to Google Sheets:', error);
         }
     }
-    // -----------------------------------------------------
 
-    // Funciones auxiliares
     function formatNumber(num, decimals = 0) {
         if (num === undefined || num === null) return "";
         if (typeof num !== "number") return num;
@@ -236,12 +333,19 @@
     function calculateCocAndIq(p) {
         const totalPowerRaw = p.totalPower * 1_000_000;
         const f1Raw = p.f1Arena * 1_000_000;
-        const denominator = totalPowerRaw + f1Raw + (p.heroPower||0) + (p.troopsPower||0) + (p.tankPower||0) + (p.techPower||0);
+        const denominator = totalPowerRaw + f1Raw + (p.heroPower || 0) + (p.troopsPower || 0) + (p.tankPower || 0) + (p.techPower || 0);
         let coc = denominator > 0 ? ((p.vsWeek + p.vs4Week) / denominator) * 100 : 0;
         coc = Math.round(coc * 100) / 100;
         let iq = p.level > 0 ? coc / p.level : 0;
         iq = Math.round(iq * 100) / 100;
         return { coc, iq };
+    }
+
+    function evaluateVsStatus(playerPoints, minPoints) {
+        if (playerPoints >= minPoints) return 'met';
+        const diff = minPoints - playerPoints;
+        if (diff < 3100000) return 'close';
+        return 'fail';
     }
 
     async function updateAllRankings() {
@@ -259,7 +363,8 @@
         }
         applyFilters();
         renderCanyonModal();
-        await savePlayersToSheet(players); // Guarda automáticamente tras cada cambio
+        updateStats();
+        await savePlayersToSheet(players);
     }
 
     function applyFilters() {
@@ -276,9 +381,7 @@
                 }
                 else if (col.type === "text") {
                     if (filter.text && filter.text.trim() !== "") {
-                        let strValue = String(value).toLowerCase();
-                        let search = filter.text.toLowerCase();
-                        if (!strValue.includes(search)) return false;
+                        if (!String(value).toLowerCase().includes(filter.text.toLowerCase())) return false;
                     }
                 }
                 else if (col.type === "select") {
@@ -290,6 +393,98 @@
             return true;
         });
         renderPlayersTable();
+    }
+
+    function updateStats() {
+        const totalPlayers = players.length;
+        if (totalPlayers === 0) {
+            document.getElementById("statsContainer").innerHTML = '<div class="stat-card">No players loaded. Please load Excel or add players manually.</div>';
+            return;
+        }
+        const sumTotalPower = players.reduce((s,p) => s + p.totalPower, 0);
+        const avgTotalPower = sumTotalPower / totalPlayers;
+        const sumVsWeek = players.reduce((s,p) => s + p.vsWeek, 0);
+        const avgVsWeek = sumVsWeek / totalPlayers;
+        const sumVs4Week = players.reduce((s,p) => s + p.vs4Week, 0);
+        const avgVs4Week = sumVs4Week / totalPlayers;
+        
+        const powerRanges = { "300M+":0, "260-300M":0, "230-260M":0, "200-230M":0, "170-200M":0, "<170M":0 };
+        players.forEach(p => {
+            const power = p.totalPower;
+            if (power >= 300) powerRanges["300M+"]++;
+            else if (power >= 260) powerRanges["260-300M"]++;
+            else if (power >= 230) powerRanges["230-260M"]++;
+            else if (power >= 200) powerRanges["200-230M"]++;
+            else if (power >= 170) powerRanges["170-200M"]++;
+            else powerRanges["<170M"]++;
+        });
+        
+        const f1Ranges = { ">=200M":0, "160-199.99M":0, "130-159.99M":0, "100-129.99M":0, "70-99.99M":0, "<70M":0 };
+        players.forEach(p => {
+            const f1 = p.f1Arena;
+            if (f1 >= 200) f1Ranges[">=200M"]++;
+            else if (f1 >= 160) f1Ranges["160-199.99M"]++;
+            else if (f1 >= 130) f1Ranges["130-159.99M"]++;
+            else if (f1 >= 100) f1Ranges["100-129.99M"]++;
+            else if (f1 >= 70) f1Ranges["70-99.99M"]++;
+            else f1Ranges["<70M"]++;
+        });
+        
+        const levelCount = {};
+        const rangeCount = {};
+        players.forEach(p => { levelCount[p.level] = (levelCount[p.level] || 0) + 1; });
+        players.forEach(p => { rangeCount[p.range] = (rangeCount[p.range] || 0) + 1; });
+        
+        const countryCount = {};
+        players.forEach(p => { countryCount[p.country] = (countryCount[p.country] || 0) + 1; });
+        const countryPercent = Object.entries(countryCount).map(([c, cnt]) => `${c}: ${cnt} (${(cnt/totalPlayers*100).toFixed(1)}%)`).join(', ');
+        
+        let vsWeekMet=0, vsWeekClose=0, vsWeekFail=0;
+        let vs4WeekMet=0, vs4WeekClose=0, vs4WeekFail=0;
+        players.forEach(p => {
+            const sWeek = evaluateVsStatus(p.vsWeek, vsWeekMin);
+            if (sWeek === 'met') vsWeekMet++;
+            else if (sWeek === 'close') vsWeekClose++;
+            else vsWeekFail++;
+            const s4Week = evaluateVsStatus(p.vs4Week, vs4WeekMin);
+            if (s4Week === 'met') vs4WeekMet++;
+            else if (s4Week === 'close') vs4WeekClose++;
+            else vs4WeekFail++;
+        });
+        
+        const statsHtml = `
+            <div class="stat-card"><h3>📊 Averages</h3>
+                <p>💪 Total Power: <span class="stat-number">${formatNumber(avgTotalPower,1)} M</span></p>
+                <p>⚔️ VS Week: <span class="stat-number">${formatNumber(avgVsWeek,0)}</span></p>
+                <p>📅 VS 4 Weeks: <span class="stat-number">${formatNumber(avgVs4Week,0)}</span></p>
+            </div>
+            <div class="stat-card"><h3>📈 Total Power Distribution</h3>
+                ${Object.entries(powerRanges).map(([label, count]) => `<p>${label}: ${count} (${(count/totalPlayers*100).toFixed(1)}%)</p>`).join('')}
+            </div>
+            <div class="stat-card"><h3>🏆 F1 Total Power Distribution</h3>
+                ${Object.entries(f1Ranges).map(([label, count]) => `<p>${label}: ${count} (${(count/totalPlayers*100).toFixed(1)}%)</p>`).join('')}
+            </div>
+            <div class="stat-card"><h3>🎚️ Level Distribution</h3>
+                ${Object.entries(levelCount).sort((a,b)=>a[0]-b[0]).map(([lvl, cnt]) => `<p>Level ${lvl}: ${cnt} (${(cnt/totalPlayers*100).toFixed(1)}%)</p>`).join('')}
+            </div>
+            <div class="stat-card"><h3>🏅 Range Distribution</h3>
+                ${Object.entries(rangeCount).map(([rng, cnt]) => `<p>${rng}: ${cnt} (${(cnt/totalPlayers*100).toFixed(1)}%)</p>`).join('')}
+            </div>
+            <div class="stat-card"><h3>🎯 VS Week Performance (min ${formatNumber(vsWeekMin,0)})</h3>
+                <p>✅ Met: ${vsWeekMet} (${(vsWeekMet/totalPlayers*100).toFixed(1)}%)</p>
+                <p>🔵 Close (<3.1M below): ${vsWeekClose} (${(vsWeekClose/totalPlayers*100).toFixed(1)}%)</p>
+                <p>🔴 Fail (≥3.1M below): ${vsWeekFail} (${(vsWeekFail/totalPlayers*100).toFixed(1)}%)</p>
+            </div>
+            <div class="stat-card"><h3>🎯 VS 4 Weeks Performance (min ${formatNumber(vs4WeekMin,0)})</h3>
+                <p>✅ Met: ${vs4WeekMet} (${(vs4WeekMet/totalPlayers*100).toFixed(1)}%)</p>
+                <p>🔵 Close (<3.1M below): ${vs4WeekClose} (${(vs4WeekClose/totalPlayers*100).toFixed(1)}%)</p>
+                <p>🔴 Fail (≥3.1M below): ${vs4WeekFail} (${(vs4WeekFail/totalPlayers*100).toFixed(1)}%)</p>
+            </div>
+            <div class="stat-card"><h3>🌍 Countries</h3>
+                <p style="font-size:0.7rem;">${countryPercent}</p>
+            </div>
+        `;
+        document.getElementById("statsContainer").innerHTML = statsHtml;
     }
 
     function renderPlayersTable() {
@@ -327,6 +522,17 @@
                     select.value = p.notes || "";
                     select.addEventListener("change", (e) => { p.notes = e.target.value; updateAllRankings(); });
                     td.appendChild(select);
+                } else if (col.type === "select" && col.key !== "selectedForCC" && col.key !== "notes") {
+                    const select = document.createElement("select");
+                    col.options.forEach(opt => {
+                        const option = document.createElement("option");
+                        option.value = opt;
+                        option.textContent = opt;
+                        select.appendChild(option);
+                    });
+                    select.value = p[col.key] || "";
+                    select.addEventListener("change", (e) => { p[col.key] = e.target.value; updateAllRankings(); });
+                    td.appendChild(select);
                 } else {
                     let val = p[col.key];
                     if (val === undefined) val = "";
@@ -337,6 +543,8 @@
                     }
                     td.textContent = val;
                     if (col.key === "coc") td.className = getCocColorClass(p.coc);
+                    if (col.key === "vsWeek") td.classList.add(evaluateVsStatus(p.vsWeek, vsWeekMin) === 'met' ? 'vs-met' : (evaluateVsStatus(p.vsWeek, vsWeekMin) === 'close' ? 'vs-close' : 'vs-fail'));
+                    if (col.key === "vs4Week") td.classList.add(evaluateVsStatus(p.vs4Week, vs4WeekMin) === 'met' ? 'vs-met' : (evaluateVsStatus(p.vs4Week, vs4WeekMin) === 'close' ? 'vs-close' : 'vs-fail'));
                 }
                 row.appendChild(td);
             });
@@ -387,7 +595,6 @@
         });
     }
 
-    // Funciones de formulario
     let editingIndex = -1;
     function openFormForEdit(idx) {
         editingIndex = idx;
@@ -397,7 +604,7 @@
     }
     function openNewForm() {
         editingIndex = -1;
-        fillFormWithPlayer({ level:30, range:"R3", country:"", name:"", totalPower:100, vsWeek:0, vs4Week:0, f1Arena:50, heroPower:0, troopsPower:0, tankPower:0, techPower:0, selectedForCC:"NO", notes:"", team:"", zone:"" });
+        fillFormWithPlayer({ level:30, range:"R3", country:"USA", name:"", totalPower:100, vsWeek:0, vs4Week:0, f1Arena:50, heroPower:0, troopsPower:0, tankPower:0, techPower:0, selectedForCC:"NO", notes:"", team:"", zone:"A", availability:"Available" });
         document.getElementById("formTitle").innerText = "New Player";
         document.getElementById("formCard").style.display = "block";
     }
@@ -415,6 +622,13 @@
                 div.innerHTML = `<label>${labels[i]}</label><select id="field_${f}"><option value="">None</option><option value="PROMOTE TO R2">PROMOTE TO R2</option><option value="PROMOTE TO R3">PROMOTE TO R3</option><option value="DEGRADE TO R2">DEGRADE TO R2</option><option value="DEGRADE TO R1">DEGRADE TO R1</option><option value="SEND TO ACADEMY">SEND TO ACADEMY</option><option value="SEND TO FARM">SEND TO FARM</option><option value="NEW PLAYER">NEW PLAYER</option></select>`;
             } else if (f === "team") {
                 div.innerHTML = `<label>${labels[i]}</label><select id="field_${f}"><option value="">None</option><option value="T1">T1</option><option value="R1">R1</option><option value="T2">T2</option><option value="R2">R2</option></select>`;
+            } else if (f === "range") {
+                div.innerHTML = `<label>${labels[i]}</label><select id="field_${f}"><option value="R5">R5</option><option value="R4">R4</option><option value="R3">R3</option><option value="R2">R2</option><option value="R1">R1</option></select>`;
+            } else if (f === "country") {
+                let options = COUNTRIES.map(c => `<option value="${c}">${c}</option>`).join('');
+                div.innerHTML = `<label>${labels[i]}</label><select id="field_${f}">${options}</select>`;
+            } else if (f === "zone") {
+                div.innerHTML = `<label>${labels[i]}</label><select id="field_${f}"><option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option></select>`;
             } else {
                 div.innerHTML = `<label>${labels[i]}</label><input id="field_${f}" value="${value}" placeholder="${labels[i]}">`;
             }
@@ -424,6 +638,8 @@
         document.getElementById("field_notes").value = p.notes || "";
         document.getElementById("field_team").value = p.team || "";
         document.getElementById("field_range").value = p.range || "R3";
+        document.getElementById("field_country").value = p.country || "USA";
+        document.getElementById("field_zone").value = p.zone || "A";
     }
     function getPlayerFromForm() {
         return {
@@ -442,7 +658,7 @@
             selectedForCC: document.getElementById("field_selectedForCC")?.value || "NO",
             notes: document.getElementById("field_notes")?.value || "",
             team: document.getElementById("field_team")?.value || "",
-            zone: document.getElementById("field_zone")?.value || ""
+            zone: document.getElementById("field_zone")?.value || "A"
         };
     }
     document.getElementById("savePlayerBtn")?.addEventListener("click", () => {
@@ -456,7 +672,6 @@
     document.getElementById("cancelFormBtn")?.addEventListener("click", () => document.getElementById("formCard").style.display = "none");
     document.getElementById("addNewBtn")?.addEventListener("click", openNewForm);
 
-    // Exportar a Excel (igual que antes)
     function exportToExcel() {
         const title = document.getElementById("reportTitle").value || "STATICS LEGION STORM - LGXN";
         const until = document.getElementById("untilDate").value;
@@ -477,7 +692,7 @@
         const canyonRows = [[`${title} - Canyon Clash - Until: ${until}`], [], canyonHeaders];
         players.forEach(p => {
             const clashPoints = p.vsWeek + p.vs4Week;
-            let availability = (p.team === "T1" || p.team === "T2") ? "Available" : (p.team === "R1" || p.team === "R2") ? "Reserve" : "";
+            let availability = p.availability || "Available";
             canyonRows.push([p.name, p.range, p.f1Arena, p.team, p.zone, clashPoints, availability]);
         });
         const wsCanyon = XLSX.utils.aoa_to_sheet(canyonRows);
@@ -494,7 +709,7 @@
         const canyonRows = [[`${title} - Canyon Clash - Until: ${until}`], [], ["NAME","RANGE","F1 TOTAL POWER","TEAM","ZONE","CLASH POINTS","AVAILABILITY"]];
         players.forEach(p => {
             const clashPoints = p.vsWeek + p.vs4Week;
-            let availability = (p.team === "T1" || p.team === "T2") ? "Available" : (p.team === "R1" || p.team === "R2") ? "Reserve" : "";
+            let availability = p.availability || "Available";
             canyonRows.push([p.name, p.range, p.f1Arena, p.team, p.zone, clashPoints, availability]);
         });
         const ws = XLSX.utils.aoa_to_sheet(canyonRows);
@@ -504,7 +719,6 @@
         XLSX.writeFile(wb, `canyon_${until}.xlsx`);
     });
 
-    // PDF
     document.getElementById("printPdfBtn")?.addEventListener("click", () => {
         const title = document.getElementById("reportTitle").value;
         const until = document.getElementById("untilDate").value;
@@ -513,7 +727,6 @@
         window.print();
     });
 
-    // Cargar Excel (soporte para importar)
     function loadExcelData(arrayBuffer) {
         const workbook = XLSX.read(arrayBuffer, { type: 'array' });
         const sheet = workbook.Sheets[workbook.SheetNames[0]];
@@ -534,9 +747,10 @@
             });
             if(player.name && player.name.toString().trim() !== "") {
                 player.team = player.team || "";
-                player.zone = player.zone || "";
+                player.zone = player.zone || "A";
                 player.selectedForCC = player.selectedForCC || "NO";
                 player.notes = player.notes || "";
+                player.availability = player.availability || "Available";
                 newPlayers.push(player);
             }
         }
@@ -552,109 +766,100 @@
         reader.readAsArrayBuffer(file);
     });
 
-    // OCR (básico, igual que antes)
-    let ocrData = null;
+    // ---------- OCR ----------
     document.getElementById("ocrImageBtn")?.addEventListener("click", () => {
         document.getElementById("ocrCard").style.display = "block";
         document.getElementById("ocrImageInput").value = "";
         document.getElementById("ocrPreview").innerHTML = "";
         document.getElementById("ocrStatus").innerText = "";
-        ocrData = null;
+        document.getElementById("ocrExtractedData").innerHTML = "";
+        ocrExtracted = { name: "", points: 0 };
     });
     document.getElementById("closeOcrBtn")?.addEventListener("click", () => document.getElementById("ocrCard").style.display = "none");
+
     document.getElementById("ocrImageInput")?.addEventListener("change", async (e) => {
         const file = e.target.files[0];
         if(!file) return;
         const statusDiv = document.getElementById("ocrStatus");
         const previewDiv = document.getElementById("ocrPreview");
+        const extractedDiv = document.getElementById("ocrExtractedData");
         statusDiv.innerText = "Processing OCR... (10-20 sec)";
         previewDiv.innerHTML = "";
+        extractedDiv.innerHTML = "";
         const img = URL.createObjectURL(file);
         try {
             const { data: { text } } = await Tesseract.recognize(img, 'spa+eng');
             const extractedText = text;
             statusDiv.innerText = "OCR completed. Analyzing...";
             previewDiv.innerHTML = `<strong>Raw text:</strong><br>${extractedText.replace(/\n/g,'<br>')}`;
+            
             const lines = extractedText.split(/\r?\n/);
-            let parsed = { name: "", totalPower: 0, techPower: 0, troopsPower: 0, heroPower: 0, tankPower: 0 };
-            for (let line of lines) {
-                let clean = line.trim();
-                if (clean.length > 2 && clean.length < 30 && !/[\d,]{6,}/.test(clean) && !clean.includes("Poder") && !clean.includes("Potencia") && !clean.includes("Detalles")) {
-                    parsed.name = clean;
-                    break;
-                }
-            }
-            function cleanNumber(str) {
-                if (!str) return 0;
-                let cleaned = str.replace(/\./g, '').replace(/,/g, '');
-                let num = parseFloat(cleaned);
-                return isNaN(num) ? 0 : num;
-            }
+            let foundName = "";
+            let foundPoints = 0;
+            
             for (let i = 0; i < lines.length; i++) {
-                let line = lines[i];
-                if (!parsed.totalPower) {
-                    let match = line.match(/(\d{1,3}(?:,\d{3})+)/);
-                    if (match) {
-                        let num = cleanNumber(match[1]);
-                        if (num > 100000000 && num < 500000000) parsed.totalPower = num;
+                let line = lines[i].trim();
+                if (!line) continue;
+                let pointsMatch = line.match(/(\d{1,3}(?:,\d{3})+)/);
+                if (pointsMatch && !foundPoints) {
+                    let points = parseInt(pointsMatch[1].replace(/,/g, ''));
+                    if (!isNaN(points) && points > 1000000) {
+                        foundPoints = points;
+                        if (i > 0 && lines[i-1].trim().length > 2 && !lines[i-1].includes(',')) {
+                            foundName = lines[i-1].trim();
+                        } else {
+                            let beforeNumber = line.substring(0, line.indexOf(pointsMatch[1])).trim();
+                            if (beforeNumber.length > 2) foundName = beforeNumber;
+                        }
+                        break;
                     }
                 }
-                if (line.includes("Tecnologia") || line.includes("Tecnología")) {
-                    let nextLine = lines[i+1] || "";
-                    let match = nextLine.match(/(\d{1,3}(?:,\d{3})+)/);
-                    if (match) parsed.techPower = cleanNumber(match[1]);
-                }
-                if (line.includes("tropas")) {
-                    let nextLine = lines[i+1] || "";
-                    let match = nextLine.match(/(\d{1,3}(?:,\d{3})+)/);
-                    if (match) parsed.troopsPower = cleanNumber(match[1]);
-                }
-                if (line.includes("Héroe") || line.includes("Heroe")) {
-                    let nextLine = lines[i+1] || "";
-                    let match = nextLine.match(/(\d{1,3}(?:,\d{3})+)/);
-                    if (match) parsed.heroPower = cleanNumber(match[1]);
-                }
-                if (line.includes("vehículo") || line.includes("vehiculo")) {
-                    let nextLine = lines[i+1] || "";
-                    let match = nextLine.match(/(\d{1,3}(?:,\d{3})+)/);
-                    if (match) parsed.tankPower = cleanNumber(match[1]);
+            }
+            if (!foundName) {
+                for (let line of lines) {
+                    let clean = line.trim();
+                    if (clean.length > 2 && !/[\d,]{6,}/.test(clean) && !clean.includes("Poder") && !clean.includes("Ranking")) {
+                        foundName = clean;
+                        break;
+                    }
                 }
             }
-            ocrData = parsed;
-            statusDiv.innerHTML = `OCR extracted: Name="${parsed.name}", Total=${parsed.totalPower.toLocaleString()}, Tech=${parsed.techPower.toLocaleString()}, Troops=${parsed.troopsPower.toLocaleString()}, Hero=${parsed.heroPower.toLocaleString()}, Tank=${parsed.tankPower.toLocaleString()}`;
-        } catch(err) { statusDiv.innerText = "OCR error: " + err; }
-        finally { URL.revokeObjectURL(img); }
-    });
-    document.getElementById("applyOcrDataBtn")?.addEventListener("click", () => {
-        if (!ocrData || !ocrData.name) { alert("No valid OCR data."); return; }
-        const normalizedName = ocrData.name.trim().toUpperCase().replace(/Rortu/i, 'PORTU');
-        const existingIndex = players.findIndex(p => p.name.trim().toUpperCase() === normalizedName);
-        if (existingIndex !== -1) {
-            const p = players[existingIndex];
-            if (ocrData.totalPower) p.totalPower = ocrData.totalPower / 1_000_000;
-            if (ocrData.techPower) p.techPower = ocrData.techPower;
-            if (ocrData.troopsPower) p.troopsPower = ocrData.troopsPower;
-            if (ocrData.heroPower) p.heroPower = ocrData.heroPower;
-            if (ocrData.tankPower) p.tankPower = ocrData.tankPower;
-            updateAllRankings();
-            alert(`Player "${ocrData.name}" updated.`);
-            document.getElementById("ocrCard").style.display = "none";
-        } else {
-            openNewForm();
-            setTimeout(() => {
-                if (ocrData.name) document.getElementById("field_name").value = ocrData.name;
-                if (ocrData.totalPower) document.getElementById("field_totalPower").value = ocrData.totalPower / 1_000_000;
-                if (ocrData.techPower) document.getElementById("field_techPower").value = ocrData.techPower;
-                if (ocrData.troopsPower) document.getElementById("field_troopsPower").value = ocrData.troopsPower;
-                if (ocrData.heroPower) document.getElementById("field_heroPower").value = ocrData.heroPower;
-                if (ocrData.tankPower) document.getElementById("field_tankPower").value = ocrData.tankPower;
-                alert("New player created with OCR data. Complete missing fields.");
-            }, 100);
-            document.getElementById("ocrCard").style.display = "none";
+            ocrExtracted = { name: foundName, points: foundPoints };
+            extractedDiv.innerHTML = `<strong>Extracted:</strong> Name: ${foundName || 'Not found'}, Points: ${foundPoints ? foundPoints.toLocaleString() : 'Not found'}`;
+            statusDiv.innerText = "OCR done. Use buttons below to apply points to VS Week or VS 4 Weeks.";
+        } catch(err) {
+            statusDiv.innerText = "OCR error: " + err;
+        } finally {
+            URL.revokeObjectURL(img);
         }
     });
 
-    // Funciones de los modales (filtros y canyon)
+    function applyOcrPointsToField(field) {
+        if (!ocrExtracted.name || !ocrExtracted.points) {
+            alert("No valid OCR data. Please run OCR first.");
+            return;
+        }
+        const normalizedName = ocrExtracted.name.trim().toUpperCase().replace(/Rortu/i, 'PORTU');
+        const existingIndex = players.findIndex(p => p.name.trim().toUpperCase() === normalizedName);
+        if (existingIndex !== -1) {
+            const player = players[existingIndex];
+            if (field === 'vsWeek') {
+                player.vsWeek = ocrExtracted.points;
+                alert(`Updated ${player.name} VS Week to ${ocrExtracted.points.toLocaleString()}`);
+            } else {
+                player.vs4Week = ocrExtracted.points;
+                alert(`Updated ${player.name} VS 4 Weeks to ${ocrExtracted.points.toLocaleString()}`);
+            }
+            updateAllRankings();
+            document.getElementById("ocrCard").style.display = "none";
+        } else {
+            alert(`Player "${ocrExtracted.name}" not found. Please add manually.`);
+        }
+    }
+    document.getElementById("applyOcrVsWeekBtn")?.addEventListener("click", () => applyOcrPointsToField('vsWeek'));
+    document.getElementById("applyOcrVs4WeekBtn")?.addEventListener("click", () => applyOcrPointsToField('vs4Week'));
+
+    // ---------- Filter Modal Functions ----------
     function buildFilterModal() {
         const container = document.getElementById("filterModalBody");
         container.innerHTML = "";
@@ -714,19 +919,13 @@
             if (col.type === "number") {
                 const minVal = document.getElementById(`filter_min_${col.key}`)?.value;
                 const maxVal = document.getElementById(`filter_max_${col.key}`)?.value;
-                if (minVal || maxVal) {
-                    newFilters[col.key] = { min: minVal, max: maxVal };
-                }
+                if (minVal || maxVal) newFilters[col.key] = { min: minVal, max: maxVal };
             } else if (col.type === "text") {
                 const textVal = document.getElementById(`filter_text_${col.key}`)?.value;
-                if (textVal && textVal.trim() !== "") {
-                    newFilters[col.key] = { text: textVal };
-                }
+                if (textVal && textVal.trim() !== "") newFilters[col.key] = { text: textVal };
             } else if (col.type === "select") {
                 const selected = document.getElementById(`filter_select_${col.key}`)?.value;
-                if (selected && selected !== "") {
-                    newFilters[col.key] = { selected: selected };
-                }
+                if (selected && selected !== "") newFilters[col.key] = { selected: selected };
             }
         });
         return newFilters;
@@ -758,36 +957,37 @@
         resetFilters();
     });
 
-    // Canyon Clash
+    // ---------- Canyon Clash Functions ----------
     function renderCanyonModal() {
         const tbody = document.getElementById("canyonModalBody");
         if (!tbody) return;
         tbody.innerHTML = "";
         players.forEach((p, idx) => {
-            const clashPoints = p.vsWeek + p.vs4Week;
-            const availability = (p.team === "T1" || p.team === "T2") ? "Available" : (p.team === "R1" || p.team === "R2") ? "Reserve" : "";
             const row = document.createElement("tr");
+            const clashPoints = p.vsWeek + p.vs4Week;
             row.innerHTML = `
                 <td>${p.name || ""}</td>
                 <td>${p.range || ""}</td>
                 <td>${formatNumber(p.f1Arena, 1)}</td>
                 <td><select class="canyon-team" data-idx="${idx}"><option value="">None</option><option value="T1" ${p.team === "T1" ? "selected" : ""}>T1</option><option value="R1" ${p.team === "R1" ? "selected" : ""}>R1</option><option value="T2" ${p.team === "T2" ? "selected" : ""}>T2</option><option value="R2" ${p.team === "R2" ? "selected" : ""}>R2</option></select></td>
-                <td><input type="text" class="canyon-zone" data-idx="${idx}" value="${p.zone || ""}" placeholder="Zone" style="width:80px;"></td>
-                <td>${formatNumber(clashPoints, 0)}</td>
-                <td>${availability}</td>
+                <td><select class="canyon-zone" data-idx="${idx}"><option value="A" ${p.zone === "A" ? "selected" : ""}>A</option><option value="B" ${p.zone === "B" ? "selected" : ""}>B</option><option value="C" ${p.zone === "C" ? "selected" : ""}>C</option><option value="D" ${p.zone === "D" ? "selected" : ""}>D</option></select></td>
+                <td><input type="number" class="canyon-clashpoints" data-idx="${idx}" value="${clashPoints}" style="width:100px;" disabled></td>
+                <td><select class="canyon-availability" data-idx="${idx}"><option value="Available" ${p.availability === "Available" ? "selected" : ""}>Available</option><option value="To Confirme" ${p.availability === "To Confirme" ? "selected" : ""}>To Confirme</option><option value="Fixed" ${p.availability === "Fixed" ? "selected" : ""}>Fixed</option><option value="Reserve" ${p.availability === "Reserve" ? "selected" : ""}>Reserve</option><option value="No Participate" ${p.availability === "No Participate" ? "selected" : ""}>No Participate</option><option value="No Show" ${p.availability === "No Show" ? "selected" : ""}>No Show</option></select></td>
                 <td><button class="saveCanyonModalBtn" data-idx="${idx}">Save</button></td>
             `;
             tbody.appendChild(row);
         });
         document.querySelectorAll('.saveCanyonModalBtn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
+            btn.addEventListener('click', async (e) => {
                 const idx = parseInt(btn.dataset.idx);
                 const teamSelect = document.querySelector(`.canyon-team[data-idx="${idx}"]`);
-                const zoneInput = document.querySelector(`.canyon-zone[data-idx="${idx}"]`);
-                if (teamSelect && zoneInput) {
+                const zoneSelect = document.querySelector(`.canyon-zone[data-idx="${idx}"]`);
+                const availSelect = document.querySelector(`.canyon-availability[data-idx="${idx}"]`);
+                if (teamSelect && zoneSelect && availSelect) {
                     players[idx].team = teamSelect.value;
-                    players[idx].zone = zoneInput.value;
-                    updateAllRankings();
+                    players[idx].zone = zoneSelect.value;
+                    players[idx].availability = availSelect.value;
+                    await updateAllRankings();
                 }
             });
         });
@@ -798,6 +998,32 @@
         document.getElementById("canyonModalStats").innerHTML = `<div class="stat-card">T1: ${t1}</div><div class="stat-card">R1: ${r1}</div><div class="stat-card">T2: ${t2}</div><div class="stat-card">R2: ${r2}</div>`;
     }
 
+    document.getElementById("printCanyonPdfBtn")?.addEventListener("click", () => {
+        const title = document.getElementById("reportTitle").value;
+        const until = document.getElementById("untilDate").value;
+        const printContent = document.getElementById("canyonModalTable").cloneNode(true);
+        const w = window.open('', '_blank');
+        w.document.write(`
+            <html><head><title>Canyon Clash Roster</title>
+            <style>body{font-family:Arial;margin:20px;} table{border-collapse:collapse;width:100%;} th,td{border:1px solid #000;padding:5px;} h2{text-align:center;}</style>
+            </head><body><h2>${title} - Canyon Clash Roster</h2><p>Until: ${until}</p>${printContent.outerHTML}</body></html>
+        `);
+        w.document.close();
+        w.print();
+    });
+
+    // Goals apply
+    function applyVsThresholds() {
+        const newWeek = parseFloat(document.getElementById("minVsWeek").value);
+        const new4Week = parseFloat(document.getElementById("minVs4Week").value);
+        if (!isNaN(newWeek)) vsWeekMin = newWeek;
+        if (!isNaN(new4Week)) vs4WeekMin = new4Week;
+        updateStats();
+        renderPlayersTable();
+    }
+    document.getElementById("applyVsThresholdsBtn")?.addEventListener("click", applyVsThresholds);
+
+    // Modals init
     const canyonModal = document.getElementById("canyonModal");
     document.getElementById("openCanyonModalBtn")?.addEventListener("click", () => { renderCanyonModal(); canyonModal.style.display = "flex"; });
     document.getElementById("closeModalBtn")?.addEventListener("click", () => canyonModal.style.display = "none");
@@ -805,24 +1031,23 @@
     window.addEventListener("click", (e) => { if (e.target === canyonModal) canyonModal.style.display = "none"; });
     window.addEventListener("click", (e) => { if (e.target === document.getElementById("filterModal")) document.getElementById("filterModal").style.display = "none"; });
 
-    // Inicialización: cargar datos desde Google Sheets
+    // Initialization
     async function initializeApp() {
         const loadedPlayers = await loadPlayersFromSheet();
         if (loadedPlayers && loadedPlayers.length) {
             players = loadedPlayers;
+            players.forEach(p => {
+                if (!p.availability) p.availability = "Available";
+                if (!p.zone) p.zone = "A";
+            });
         } else {
-            // Datos de ejemplo por si la hoja está vacía
-            players = [
-                { level:30, range:"R5", country:"USA", name:"GEORGIABOY", totalPower:248.2, vsWeek:90756875, vs4Week:154564073, f1Arena:123.9, heroPower:60426187, troopsPower:0, tankPower:8548624, techPower:18352969, selectedForCC:"YES", notes:"", team:"T1", zone:"North", coc:0, iq:0 },
-                { level:30, range:"R4", country:"VEN", name:"NETPORTU", totalPower:182.4, vsWeek:62691421, vs4Week:118460712, f1Arena:116.5, heroPower:54156886, troopsPower:0, tankPower:9248041, techPower:18506794, selectedForCC:"YES", notes:"", team:"T1", zone:"South", coc:0, iq:0 },
-                { level:31, range:"R4", country:"USA", name:"CRACKER2", totalPower:195.2, vsWeek:99149785, vs4Week:146286198, f1Arena:148.6, heroPower:59602324, troopsPower:0, tankPower:9498119, techPower:17170863, selectedForCC:"NO", notes:"", team:"R1", zone:"", coc:0, iq:0 },
-                { level:31, range:"R4", country:"UK", name:"RAFFA10", totalPower:226.6, vsWeek:44332254, vs4Week:88375615, f1Arena:133.4, heroPower:45512343, troopsPower:0, tankPower:6814339, techPower:16858302, selectedForCC:"YES", notes:"", team:"T2", zone:"East", coc:0, iq:0 },
-                { level:30, range:"R3", country:"UK", name:"HALO79", totalPower:232.8, vsWeek:23839992, vs4Week:35758468, f1Arena:100.2, heroPower:58533344, troopsPower:0, tankPower:7959576, techPower:17636832, selectedForCC:"NO", notes:"NEW PLAYER", team:"", zone:"", coc:0, iq:0 }
-            ];
+            players = [];
         }
-        updateAllRankings();
+        await updateAllRankings();
+        if (players.length === 0) {
+            document.getElementById("statsContainer").innerHTML = '<div class="stat-card">No players loaded. Please load Excel or add players manually.</div>';
+        }
     }
-
     initializeApp();
 </script>
 </body>
