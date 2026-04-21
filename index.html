@@ -35,32 +35,33 @@
             font-size: 0.7rem;
             table-layout: fixed;
         }
-        /* Anchos personalizados */
-        th:nth-child(1) { width: 10%; }  /* Name */
-        th:nth-child(2) { width: 4%; }   /* Country */
-        th:nth-child(3) { width: 2%; }   /* Level */
-        th:nth-child(4) { width: 3%; }   /* Range */
-        th:nth-child(5) { width: 4%; }   /* Total Power */
-        th:nth-child(6) { width: 2%; }   /* Total Rank */
-        th:nth-child(7) { width: 4%; }   /* F1 Total Power */
-        th:nth-child(8) { width: 2%; }   /* F1 Rank */
-        th:nth-child(9) { width: 5%; }   /* Heros Power */
-        th:nth-child(10) { width: 2%; }  /* Heros Rank */
-        th:nth-child(11) { width: 5%; }  /* Troops Power */
-        th:nth-child(12) { width: 2%; }  /* Troops Rank */
-        th:nth-child(13) { width: 5%; }  /* Tank Power */
-        th:nth-child(14) { width: 2%; }  /* Tank Rank */
-        th:nth-child(15) { width: 5%; }  /* Tech Power */
-        th:nth-child(16) { width: 2%; }  /* Tech Rank */
-        th:nth-child(17) { width: 6%; }  /* VS Week */
-        th:nth-child(18) { width: 2%; }  /* VS Week Rank */
-        th:nth-child(19) { width: 6%; }  /* VS 4 Weeks */
-        th:nth-child(20) { width: 2%; }  /* VS 4W Rank */
-        th:nth-child(21) { width: 4%; }  /* CoC */
-        th:nth-child(22) { width: 3%; }  /* IQ */
-        th:nth-child(23) { width: 4%; }  /* Go Next CC */
-        th:nth-child(24) { width: 9%; }  /* Notes */
-        th:nth-child(25) { width: 5%; }  /* Actions */
+        /* Anchos personalizados (ahora con 26 columnas) */
+        th:nth-child(1) { width: 3%; }   /* Checkbox */
+        th:nth-child(2) { width: 9%; }   /* Name */
+        th:nth-child(3) { width: 4%; }   /* Country */
+        th:nth-child(4) { width: 2%; }   /* Level */
+        th:nth-child(5) { width: 3%; }   /* Range */
+        th:nth-child(6) { width: 4%; }   /* Total Power */
+        th:nth-child(7) { width: 2%; }   /* Total Rank */
+        th:nth-child(8) { width: 4%; }   /* F1 Total Power */
+        th:nth-child(9) { width: 2%; }   /* F1 Rank */
+        th:nth-child(10) { width: 5%; }  /* Heros Power */
+        th:nth-child(11) { width: 2%; }  /* Heros Rank */
+        th:nth-child(12) { width: 5%; }  /* Troops Power */
+        th:nth-child(13) { width: 2%; }  /* Troops Rank */
+        th:nth-child(14) { width: 5%; }  /* Tank Power */
+        th:nth-child(15) { width: 2%; }  /* Tank Rank */
+        th:nth-child(16) { width: 5%; }  /* Tech Power */
+        th:nth-child(17) { width: 2%; }  /* Tech Rank */
+        th:nth-child(18) { width: 6%; }  /* VS Week */
+        th:nth-child(19) { width: 2%; }  /* VS Week Rank */
+        th:nth-child(20) { width: 6%; }  /* VS 4 Weeks */
+        th:nth-child(21) { width: 2%; }  /* VS 4W Rank */
+        th:nth-child(22) { width: 4%; }  /* CoC */
+        th:nth-child(23) { width: 3%; }  /* IQ */
+        th:nth-child(24) { width: 4%; }  /* Go Next CC */
+        th:nth-child(25) { width: 9%; }  /* Notes */
+        th:nth-child(26) { width: 5%; }  /* Actions */
 
         th, td {
             border: 1px solid #334155;
@@ -131,6 +132,34 @@
                 background-color: #eee !important; color: black !important;
             }
         }
+
+        /* ========== ESTILOS POR COLUMNA (tamaño, negrita, tipo de letra) ========== */
+        td:nth-child(1), th:nth-child(1) { text-align: center; } /* Checkbox */
+        td:nth-child(2), th:nth-child(2) { font-size: 0.8rem; font-weight: bold; } /* Name */
+        td:nth-child(3), th:nth-child(3) { font-size: 0.7rem; } /* Country */
+        td:nth-child(4), th:nth-child(4) { font-size: 0.7rem; } /* Level */
+        td:nth-child(5), th:nth-child(5) { font-size: 0.7rem; } /* Range */
+        td:nth-child(6), th:nth-child(6) { font-size: 0.7rem; font-family: monospace; } /* Total Power */
+        td:nth-child(7), th:nth-child(7) { font-size: 0.65rem; } /* Total Rank */
+        td:nth-child(8), th:nth-child(8) { font-size: 0.7rem; font-family: monospace; } /* F1 Total Power */
+        td:nth-child(9), th:nth-child(9) { font-size: 0.65rem; } /* F1 Rank */
+        td:nth-child(10), th:nth-child(10) { font-size: 0.7rem; font-family: monospace; } /* Heros Power */
+        td:nth-child(11), th:nth-child(11) { font-size: 0.65rem; } /* Heros Rank */
+        td:nth-child(12), th:nth-child(12) { font-size: 0.7rem; font-family: monospace; } /* Troops Power */
+        td:nth-child(13), th:nth-child(13) { font-size: 0.65rem; } /* Troops Rank */
+        td:nth-child(14), th:nth-child(14) { font-size: 0.7rem; font-family: monospace; } /* Tank Power */
+        td:nth-child(15), th:nth-child(15) { font-size: 0.65rem; } /* Tank Rank */
+        td:nth-child(16), th:nth-child(16) { font-size: 0.7rem; font-family: monospace; } /* Tech Power */
+        td:nth-child(17), th:nth-child(17) { font-size: 0.65rem; } /* Tech Rank */
+        td:nth-child(18), th:nth-child(18) { font-size: 0.7rem; font-family: monospace; } /* VS Week */
+        td:nth-child(19), th:nth-child(19) { font-size: 0.65rem; } /* VS Week Rank */
+        td:nth-child(20), th:nth-child(20) { font-size: 0.7rem; font-family: monospace; } /* VS 4 Weeks */
+        td:nth-child(21), th:nth-child(21) { font-size: 0.65rem; } /* VS 4W Rank */
+        td:nth-child(22), th:nth-child(22) { font-size: 0.75rem; font-weight: bold; } /* CoC */
+        td:nth-child(23), th:nth-child(23) { font-size: 0.7rem; } /* IQ */
+        td:nth-child(24), th:nth-child(24) { font-size: 0.7rem; } /* Go Next CC */
+        td:nth-child(25), th:nth-child(25) { font-size: 0.7rem; } /* Notes */
+        td:nth-child(26), th:nth-child(26) { font-size: 0.7rem; } /* Actions */
     </style>
 </head>
 <body>
@@ -170,6 +199,7 @@
                 <button id="openCanyonModalBtn" class="btn-outline" style="background:#10b981;">Open Canyon Clash Manager</button>
                 <button id="openFilterModalBtn" class="btn-outline">Filter Report</button>
                 <button id="clearFiltersBtn" class="btn-outline">Clear Filters</button>
+                <button id="clearChecksBtn" class="btn-outline">Clear Checks</button>
             </div>
             <div>
                 <label for="excelUpload" class="btn-like" style="background:#2d3a5e;">Load Excel</label>
@@ -507,6 +537,12 @@
         document.getElementById("statsContainer").innerHTML = statsHtml;
     }
 
+    // ---------- Función para verificar nombre duplicado ----------
+    function isDuplicateName(name, excludeIndex = -1) {
+        const normalized = name.trim().toUpperCase();
+        return players.some((p, idx) => idx !== excludeIndex && p.name.trim().toUpperCase() === normalized);
+    }
+
     function renderPlayersTable() {
         const thead = document.getElementById("tableHeader");
         const tbody = document.getElementById("tableBody");
@@ -514,6 +550,18 @@
         thead.innerHTML = "";
         tbody.innerHTML = "";
         const headerRow = document.createElement("tr");
+        // Checkbox en el encabezado
+        const thCheck = document.createElement("th");
+        const headerCheckbox = document.createElement("input");
+        headerCheckbox.type = "checkbox";
+        headerCheckbox.id = "selectAllCheckbox";
+        headerCheckbox.addEventListener("change", (e) => {
+            const isChecked = e.target.checked;
+            document.querySelectorAll('.row-checkbox').forEach(cb => cb.checked = isChecked);
+        });
+        thCheck.appendChild(headerCheckbox);
+        headerRow.appendChild(thCheck);
+        // Resto de columnas
         COLUMNS.forEach(col => {
             const th = document.createElement("th");
             th.textContent = col.label;
@@ -528,6 +576,14 @@
 
         filteredPlayers.forEach((p, idx) => {
             const row = document.createElement("tr");
+            // Checkbox en cada fila
+            const tdCheck = document.createElement("td");
+            const chk = document.createElement("input");
+            chk.type = "checkbox";
+            chk.className = "row-checkbox";
+            tdCheck.appendChild(chk);
+            row.appendChild(tdCheck);
+            // Datos de columnas
             COLUMNS.forEach(col => {
                 const td = document.createElement("td");
                 if (col.key === "selectedForCC") {
@@ -684,6 +740,11 @@
     document.getElementById("savePlayerBtn")?.addEventListener("click", () => {
         const newPlayer = getPlayerFromForm();
         if(!newPlayer.name) { alert("Name is required"); return; }
+        // Validar duplicado
+        if (isDuplicateName(newPlayer.name, editingIndex)) {
+            alert("A player with this name already exists. Duplicate names are not allowed.");
+            return;
+        }
         if(editingIndex === -1) players.push(newPlayer);
         else players[editingIndex] = newPlayer;
         updateAllRankings();
@@ -701,18 +762,20 @@
         const title = document.getElementById("reportTitle").value || "STATICS LEGION STORM - LGXN";
         const until = document.getElementById("untilDate").value;
         const playerSheetData = [[`${title} - Until: ${until}`], []];
-        playerSheetData.push(COLUMNS.map(c => c.label));
+        // Encabezados: checkbox + columnas
+        const headers = ["Select"].concat(COLUMNS.map(c => c.label));
+        playerSheetData.push(headers);
         players.forEach(p => {
-            const row = COLUMNS.map(c => {
+            const row = ["", ...COLUMNS.map(c => {
                 let val = p[c.key];
                 if (c.key === "selectedForCC") val = p.selectedForCC || "NO";
                 if (c.key === "notes") val = p.notes || "";
                 return val;
-            });
+            })];
             playerSheetData.push(row);
         });
         const wsPlayers = XLSX.utils.aoa_to_sheet(playerSheetData);
-        wsPlayers['!cols'] = COLUMNS.map(() => ({ wch: 15 }));
+        wsPlayers['!cols'] = [{wch:5}].concat(COLUMNS.map(() => ({ wch: 15 })));
         const canyonHeaders = ["NAME", "RANGE", "F1 TOTAL POWER", "TEAM", "ZONE", "CLASH POINTS", "AVAILABILITY"];
         const canyonRows = [[`${title} - Canyon Clash - Until: ${until}`], [], canyonHeaders];
         players.forEach(p => {
@@ -763,7 +826,7 @@
             if(!row || row.length < 3) continue;
             const player = {};
             COLUMNS.forEach((col, idx) => {
-                let val = row[idx];
+                let val = row[idx+1]; // saltar columna de checkbox
                 if(val === undefined) val = "";
                 if(["totalPower","f1Arena","heroPower","troopsPower","tankPower","techPower","vsWeek","vs4Week","level"].includes(col.key)) {
                     val = parseFloat(val) || 0;
@@ -1107,6 +1170,13 @@
         renderPlayersTable();
     }
     document.getElementById("applyVsThresholdsBtn")?.addEventListener("click", applyVsThresholds);
+
+    // Clear all checkboxes
+    document.getElementById("clearChecksBtn")?.addEventListener("click", () => {
+        document.querySelectorAll('.row-checkbox').forEach(cb => cb.checked = false);
+        const selectAll = document.getElementById("selectAllCheckbox");
+        if (selectAll) selectAll.checked = false;
+    });
 
     // Modals init
     const canyonModal = document.getElementById("canyonModal");
