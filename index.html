@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>LEGION STORM LGXN MANAGER</title>
     <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <style>
         * { box-sizing: border-box; font-family: system-ui, 'Segoe UI', Roboto, sans-serif; }
         body { background: #0f172a; margin: 0; padding: 15px; color: #e2e8f0; }
@@ -102,7 +103,7 @@
             background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center;
         }
         .modal-content {
-            background: #1e293b; border-radius: 1rem; width: 90%; max-width: 800px;
+            background: #1e293b; border-radius: 1rem; width: 90%; max-width: 1400px;
             max-height: 85vh; overflow: auto; padding: 1rem; border: 1px solid #3b82f6;
         }
         .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
@@ -133,7 +134,7 @@
             }
         }
 
-        /* ========== ESTILOS POR COLUMNA ========== */
+        /* Estilos por columna para la tabla principal */
         td:nth-child(1), th:nth-child(1) { text-align: center; }
         td:nth-child(2), th:nth-child(2) { font-size: 0.8rem; font-weight: bold; }
         td:nth-child(3), th:nth-child(3) { font-size: 0.7rem; }
@@ -160,6 +161,20 @@
         td:nth-child(24), th:nth-child(24) { font-size: 0.7rem; }
         td:nth-child(25), th:nth-child(25) { font-size: 0.7rem; }
         td:nth-child(26), th:nth-child(26) { font-size: 0.7rem; }
+
+        /* Estilos para la tabla Canyon Clash (personalizables) */
+        .canyon-table {
+            font-size: 0.75rem;
+            table-layout: auto;
+        }
+        .canyon-table th, .canyon-table td {
+            border: 1px solid #555;
+            padding: 5px;
+        }
+        .canyon-table th {
+            background-color: #2d3e5a;
+            color: white;
+        }
     </style>
 </head>
 <body>
@@ -231,29 +246,65 @@
     </div>
 </div>
 
-<!-- Canyon Clash Modal -->
+<!-- Canyon Clash Modal (rediseñado) -->
 <div id="canyonModal" class="modal">
     <div class="modal-content">
         <div class="modal-header">
-            <h2>Canyon Clash Roster</h2>
+            <h2>Canyon Clash Manager</h2>
             <div>
-                <button id="printCanyonPdfBtn" class="btn-outline" style="margin-right:10px;">Print PDF</button>
+                <button id="exportCanyonPdfBtn" class="btn-outline" style="margin-right:10px;">Print PDF</button>
+                <button id="exportCanyonImageBtn" class="btn-outline" style="margin-right:10px;">Save as Image</button>
                 <button class="close-modal" id="closeModalBtn">&times;</button>
             </div>
         </div>
-        <div class="flex-row">
-            <button id="exportCanyonExcelBtn" class="btn-outline">Export Canyon to Excel</button>
-            <button id="syncCanyonModalBtn" class="btn-outline">Sync from Players</button>
+        <div class="flex-row" style="justify-content: space-between; align-items: center;">
+            <div>
+                <label>Filter by Team: </label>
+                <select id="canyonTeamFilter">
+                    <option value="ALL">All Teams</option>
+                    <option value="T1">T1</option>
+                    <option value="R1">R1</option>
+                    <option value="T2">T2</option>
+                    <option value="R2">R2</option>
+                    <option value="">None</option>
+                </select>
+                <button id="applyCanyonFilterBtn" style="margin-left:10px;">Apply Filter</button>
+                <button id="resetCanyonFilterBtn" style="margin-left:10px;">Reset Filter</button>
+            </div>
+            <div id="canyonCounters" style="display: flex; gap: 15px; background: #0f172a; padding: 5px 10px; border-radius: 30px;">
+                <span>T1: <span id="canyonT1Count">0</span>/20</span>
+                <span>R1: <span id="canyonR1Count">0</span>/20</span>
+                <span>T2: <span id="canyonT2Count">0</span>/20</span>
+                <span>R2: <span id="canyonR2Count">0</span>/20</span>
+            </div>
         </div>
+        <div id="canyonLimitMessage" style="color: #f97316; margin: 5px 0; display: none;">⚠️ All places occupied! Cannot assign more to T1/R1/T2/R2.</div>
         <div class="table-wrapper">
-            <table id="canyonModalTable">
+            <table id="canyonModalTable" class="canyon-table">
                 <thead>
-                    <tr><th>Name</th><th>Range</th><th>F1 Total Power</th><th>Team</th><th>Zone</th><th>Clash Points</th><th>Availability</th><th>Actions</th></tr>
+                    <tr>
+                        <th>Name</th><th>F1 Total Power</th><th>Status</th><th>Team</th><th>Zone</th><th>Role</th><th>Clash Points</th><th>Actions</th>
+                    </tr>
                 </thead>
                 <tbody id="canyonModalBody"></tbody>
             </table>
         </div>
-        <div class="stats" id="canyonModalStats"></div>
+        <div class="flex-row" style="margin-top: 15px; justify-content: flex-end;">
+            <div style="display: flex; gap: 15px; align-items: center;">
+                <span>PDF Column Selection:</span>
+                <label><input type="checkbox" id="colName" checked> Name</label>
+                <label><input type="checkbox" id="colF1" checked> F1 Total Power</label>
+                <label><input type="checkbox" id="colStatus" checked> Status</label>
+                <label><input type="checkbox" id="colTeam" checked> Team</label>
+                <label><input type="checkbox" id="colZone" checked> Zone</label>
+                <label><input type="checkbox" id="colRole" checked> Role</label>
+                <label><input type="checkbox" id="colClashPoints" checked> Clash Points</label>
+            </div>
+            <div style="margin-left: 20px;">
+                <label>Font Size: <input type="number" id="pdfFontSize" value="10" step="1" style="width:60px;"> px</label>
+                <button id="applyPdfSettingsBtn">Apply to PDF</button>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -272,7 +323,7 @@
     </div>
 </div>
 
-<!-- OCR Modal (flotante, con OCR.space) -->
+<!-- OCR Modal -->
 <div id="ocrModal" class="modal">
     <div class="modal-content">
         <div class="modal-header">
@@ -343,38 +394,10 @@
     let vsWeekMin = 12000000;
     let vs4WeekMin = 48000000;
     let editingIndex = -1;
+    let checkboxState = {};
+    let canyonTeamFilter = "ALL";
 
-    // ---------- Estado de checkboxes (persistente) ----------
-    let checkboxState = {}; // clave = nombre del jugador en mayúsculas, valor = true/false
-
-    // ---------- Google Sheets ----------
-    async function loadPlayersFromSheet() {
-        try {
-            console.log("Loading from Google Sheets...");
-            const response = await fetch(`${SHEET_API_URL}?action=load`);
-            if (!response.ok) throw new Error(`HTTP ${response.status}`);
-            const data = await response.json();
-            console.log("Data loaded:", data);
-            return Array.isArray(data) ? data : [];
-        } catch (error) {
-            console.error('Error loading from Google Sheets:', error);
-            alert("Error loading data from Google Sheets. Check console and URL.");
-            return [];
-        }
-    }
-    async function savePlayersToSheet(playersToSave) {
-        try {
-            await fetch(SHEET_API_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: new URLSearchParams({ action: 'save', data: JSON.stringify(playersToSave) })
-            });
-            console.log("Saved to Google Sheets");
-        } catch (error) {
-            console.error('Error saving to Google Sheets:', error);
-        }
-    }
-
+    // ---------- Funciones auxiliares ----------
     function formatNumber(num, decimals = 0) {
         if (num === undefined || num === null) return "";
         if (typeof num !== "number") return num;
@@ -540,12 +563,7 @@
         document.getElementById("statsContainer").innerHTML = statsHtml;
     }
 
-    // ---------- Función para verificar nombre duplicado ----------
-    function isDuplicateName(name, excludeIndex = -1) {
-        const normalized = name.trim().toUpperCase();
-        return players.some((p, idx) => idx !== excludeIndex && p.name.trim().toUpperCase() === normalized);
-    }
-
+    // ---------- Tabla principal (completa) ----------
     function renderPlayersTable() {
         const thead = document.getElementById("tableHeader");
         const tbody = document.getElementById("tableBody");
@@ -560,12 +578,11 @@
         headerCheckbox.id = "selectAllCheckbox";
         headerCheckbox.addEventListener("change", (e) => {
             const isChecked = e.target.checked;
-            // Actualizar estado de todos los jugadores
             filteredPlayers.forEach(p => {
                 const key = p.name.trim().toUpperCase();
                 checkboxState[key] = isChecked;
             });
-            renderPlayersTable(); // refrescar para mostrar cambios
+            renderPlayersTable();
         });
         thCheck.appendChild(headerCheckbox);
         headerRow.appendChild(thCheck);
@@ -593,7 +610,6 @@
             chk.checked = checkboxState[playerKey] === true;
             chk.addEventListener("change", (e) => {
                 checkboxState[playerKey] = chk.checked;
-                // Actualizar estado del checkbox "Seleccionar todo"
                 const allChecked = filteredPlayers.every(p2 => checkboxState[p2.name.trim().toUpperCase()] === true);
                 const selectAll = document.getElementById("selectAllCheckbox");
                 if (selectAll) selectAll.checked = allChecked;
@@ -690,7 +706,7 @@
         });
     }
 
-    // ---------- Player Modal (New/Edit) ----------
+    // ---------- Player Modal ----------
     function openFormForEdit(idx) {
         editingIndex = idx;
         fillFormWithPlayer(players[idx]);
@@ -699,7 +715,7 @@
     }
     function openNewForm() {
         editingIndex = -1;
-        fillFormWithPlayer({ level:30, range:"R3", country:"USA", name:"", totalPower:100, vsWeek:0, vs4Week:0, f1Arena:50, heroPower:0, troopsPower:0, tankPower:0, techPower:0, selectedForCC:"NO", notes:"", team:"", zone:"A", availability:"Available" });
+        fillFormWithPlayer({ level:30, range:"R3", country:"USA", name:"", totalPower:100, vsWeek:0, vs4Week:0, f1Arena:50, heroPower:0, troopsPower:0, tankPower:0, techPower:0, selectedForCC:"NO", notes:"", team:"", zone:"None", availability:"", role:"" });
         document.getElementById("playerModalTitle").innerText = "New Player";
         document.getElementById("playerModal").style.display = "flex";
     }
@@ -723,7 +739,7 @@
                 let options = COUNTRIES.map(c => `<option value="${c}">${c}</option>`).join('');
                 div.innerHTML = `<label>${labels[i]}</label><select id="field_${f}">${options}</select>`;
             } else if (f === "zone") {
-                div.innerHTML = `<label>${labels[i]}</label><select id="field_${f}"><option value="None">None</option><option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option></select>`;
+                div.innerHTML = `<label>${labels[i]}</label><select id="field_${f}"><option value="None">None</option><option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option><option value="ANY ZONE">ANY ZONE</option></select>`;
             } else {
                 div.innerHTML = `<label>${labels[i]}</label><input id="field_${f}" value="${value}" placeholder="${labels[i]}">`;
             }
@@ -734,7 +750,7 @@
         document.getElementById("field_team").value = p.team || "";
         document.getElementById("field_range").value = p.range || "R3";
         document.getElementById("field_country").value = p.country || "USA";
-        document.getElementById("field_zone").value = p.zone || "A";
+        document.getElementById("field_zone").value = p.zone || "None";
     }
     function getPlayerFromForm() {
         return {
@@ -753,18 +769,21 @@
             selectedForCC: document.getElementById("field_selectedForCC")?.value || "NO",
             notes: document.getElementById("field_notes")?.value || "",
             team: document.getElementById("field_team")?.value || "",
-            zone: document.getElementById("field_zone")?.value || "A"
+            zone: document.getElementById("field_zone")?.value || "None"
         };
     }
+    function isDuplicateName(name, excludeIndex = -1) {
+        const normalized = name.trim().toUpperCase();
+        return players.some((p, idx) => idx !== excludeIndex && p.name.trim().toUpperCase() === normalized);
+    }
+
     document.getElementById("savePlayerBtn")?.addEventListener("click", () => {
         const newPlayer = getPlayerFromForm();
         if(!newPlayer.name) { alert("Name is required"); return; }
-        // Validar duplicado
         if (isDuplicateName(newPlayer.name, editingIndex)) {
             alert("A player with this name already exists. Duplicate names are not allowed.");
             return;
         }
-        // Si se está editando y el nombre cambió, migrar el estado del checkbox
         if (editingIndex !== -1 && players[editingIndex].name !== newPlayer.name) {
             const oldKey = players[editingIndex].name.trim().toUpperCase();
             const newKey = newPlayer.name.trim().toUpperCase();
@@ -786,6 +805,35 @@
     });
     document.getElementById("addNewBtn")?.addEventListener("click", openNewForm);
 
+    // ---------- Google Sheets ----------
+    async function loadPlayersFromSheet() {
+        try {
+            console.log("Loading from Google Sheets...");
+            const response = await fetch(`${SHEET_API_URL}?action=load`);
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            const data = await response.json();
+            console.log("Data loaded:", data);
+            return Array.isArray(data) ? data : [];
+        } catch (error) {
+            console.error('Error loading from Google Sheets:', error);
+            alert("Error loading data from Google Sheets. Check console and URL.");
+            return [];
+        }
+    }
+    async function savePlayersToSheet(playersToSave) {
+        try {
+            await fetch(SHEET_API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: new URLSearchParams({ action: 'save', data: JSON.stringify(playersToSave) })
+            });
+            console.log("Saved to Google Sheets");
+        } catch (error) {
+            console.error('Error saving to Google Sheets:', error);
+        }
+    }
+
+    // ---------- Export to Excel ----------
     function exportToExcel() {
         const title = document.getElementById("reportTitle").value || "STATICS LEGION STORM - LGXN";
         const until = document.getElementById("untilDate").value;
@@ -803,15 +851,14 @@
         });
         const wsPlayers = XLSX.utils.aoa_to_sheet(playerSheetData);
         wsPlayers['!cols'] = [{wch:5}].concat(COLUMNS.map(() => ({ wch: 15 })));
-        const canyonHeaders = ["NAME", "RANGE", "F1 TOTAL POWER", "TEAM", "ZONE", "CLASH POINTS", "AVAILABILITY"];
+        const canyonHeaders = ["NAME", "RANGE", "F1 TOTAL POWER", "TEAM", "ZONE", "ROLE", "CLASH POINTS", "STATUS"];
         const canyonRows = [[`${title} - Canyon Clash - Until: ${until}`], [], canyonHeaders];
-        players.forEach(p => {
+        players.filter(p => p.selectedForCC === "YES").forEach(p => {
             const clashPoints = p.vsWeek + p.vs4Week;
-            let availability = p.availability || "Available";
-            canyonRows.push([p.name, p.range, p.f1Arena, p.team, p.zone, clashPoints, availability]);
+            canyonRows.push([p.name, p.range, p.f1Arena, p.team, p.zone, p.role || "", clashPoints, p.availability || ""]);
         });
         const wsCanyon = XLSX.utils.aoa_to_sheet(canyonRows);
-        wsCanyon['!cols'] = [{wch:20},{wch:8},{wch:15},{wch:8},{wch:12},{wch:15},{wch:12}];
+        wsCanyon['!cols'] = [{wch:20},{wch:8},{wch:15},{wch:8},{wch:12},{wch:20},{wch:15},{wch:15}];
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, wsPlayers, "PLAYERS");
         XLSX.utils.book_append_sheet(wb, wsCanyon, "CANYON CLASH");
@@ -821,14 +868,13 @@
     document.getElementById("exportCanyonExcelBtn")?.addEventListener("click", () => {
         const title = document.getElementById("reportTitle").value;
         const until = document.getElementById("untilDate").value;
-        const canyonRows = [[`${title} - Canyon Clash - Until: ${until}`], [], ["NAME","RANGE","F1 TOTAL POWER","TEAM","ZONE","CLASH POINTS","AVAILABILITY"]];
-        players.forEach(p => {
+        const canyonRows = [[`${title} - Canyon Clash - Until: ${until}`], [], ["NAME","RANGE","F1 TOTAL POWER","TEAM","ZONE","ROLE","CLASH POINTS","STATUS"]];
+        players.filter(p => p.selectedForCC === "YES").forEach(p => {
             const clashPoints = p.vsWeek + p.vs4Week;
-            let availability = p.availability || "Available";
-            canyonRows.push([p.name, p.range, p.f1Arena, p.team, p.zone, clashPoints, availability]);
+            canyonRows.push([p.name, p.range, p.f1Arena, p.team, p.zone, p.role || "", clashPoints, p.availability || ""]);
         });
         const ws = XLSX.utils.aoa_to_sheet(canyonRows);
-        ws['!cols'] = [{wch:20},{wch:8},{wch:15},{wch:8},{wch:12},{wch:15},{wch:12}];
+        ws['!cols'] = [{wch:20},{wch:8},{wch:15},{wch:8},{wch:12},{wch:20},{wch:15},{wch:15}];
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, "CANYON CLASH");
         XLSX.writeFile(wb, `canyon_${until}.xlsx`);
@@ -862,10 +908,11 @@
             });
             if(player.name && player.name.toString().trim() !== "") {
                 player.team = player.team || "";
-                player.zone = player.zone || "A";
+                player.zone = player.zone || "None";
                 player.selectedForCC = player.selectedForCC || "NO";
                 player.notes = player.notes || "";
-                player.availability = player.availability || "Available";
+                player.availability = player.availability || "";
+                player.role = player.role || "";
                 newPlayers.push(player);
             }
         }
@@ -881,9 +928,8 @@
         reader.readAsArrayBuffer(file);
     });
 
-    // ---------- OCR.space Integration (MEJORADA) ----------
+    // ---------- OCR ----------
     let lastOcrPlayers = [];
-
     const savedApiKey = localStorage.getItem('ocrSpaceApiKey');
     if (savedApiKey) document.getElementById('ocrApiKey').value = savedApiKey;
     document.getElementById('ocrApiKey').addEventListener('change', () => {
@@ -1026,7 +1072,7 @@
     document.getElementById("applyOcrAllWeekBtn")?.addEventListener("click", () => applyOcrToField('vsWeek'));
     document.getElementById("applyOcrAll4WeekBtn")?.addEventListener("click", () => applyOcrToField('vs4Week'));
 
-    // ---------- Filter Modal Functions ----------
+    // ---------- Filter Modal ----------
     function buildFilterModal() {
         const container = document.getElementById("filterModalBody");
         container.innerHTML = "";
@@ -1125,99 +1171,295 @@
     });
 
     // ---------- Canyon Clash Functions ----------
+    function getCanyonPlayers() {
+        return players.filter(p => p.selectedForCC === "YES");
+    }
+
+    function updateCanyonCounters() {
+        const canyonPlayers = getCanyonPlayers();
+        const t1 = canyonPlayers.filter(p => p.team === "T1").length;
+        const r1 = canyonPlayers.filter(p => p.team === "R1").length;
+        const t2 = canyonPlayers.filter(p => p.team === "T2").length;
+        const r2 = canyonPlayers.filter(p => p.team === "R2").length;
+        document.getElementById("canyonT1Count").innerText = t1;
+        document.getElementById("canyonR1Count").innerText = r1;
+        document.getElementById("canyonT2Count").innerText = t2;
+        document.getElementById("canyonR2Count").innerText = r2;
+        const limitReached = (t1 >= 20 || r1 >= 20 || t2 >= 20 || r2 >= 20);
+        document.getElementById("canyonLimitMessage").style.display = limitReached ? "block" : "none";
+        return { t1, r1, t2, r2 };
+    }
+
     function renderCanyonModal() {
         const tbody = document.getElementById("canyonModalBody");
         if (!tbody) return;
+        let canyonPlayers = getCanyonPlayers();
+        if (canyonTeamFilter !== "ALL") {
+            canyonPlayers = canyonPlayers.filter(p => p.team === canyonTeamFilter);
+        }
         tbody.innerHTML = "";
-        players.forEach((p, idx) => {
+        canyonPlayers.forEach((p, idx) => {
             const row = document.createElement("tr");
-            const clashPoints = p.vsWeek + p.vs4Week;
-            const zoneOptions = `<option value="None" ${p.zone === "None" ? "selected" : ""}>None</option><option value="A" ${p.zone === "A" ? "selected" : ""}>A</option><option value="B" ${p.zone === "B" ? "selected" : ""}>B</option><option value="C" ${p.zone === "C" ? "selected" : ""}>C</option><option value="D" ${p.zone === "D" ? "selected" : ""}>D</option>`;
-            row.innerHTML = `
-                <td>${p.name || ""}</td>
-                <td>${p.range || ""}</td>
-                <td>${formatNumber(p.f1Arena, 1)}</td>
-                <td><select class="canyon-team" data-idx="${idx}"><option value="">None</option><option value="T1" ${p.team === "T1" ? "selected" : ""}>T1</option><option value="R1" ${p.team === "R1" ? "selected" : ""}>R1</option><option value="T2" ${p.team === "T2" ? "selected" : ""}>T2</option><option value="R2" ${p.team === "R2" ? "selected" : ""}>R2</option></select></td>
-                <td><select class="canyon-zone" data-idx="${idx}">${zoneOptions}</select></td>
-                <td><input type="number" class="canyon-clashpoints" data-idx="${idx}" value="${clashPoints}" style="width:100px;" disabled></td>
-                <td><select class="canyon-availability" data-idx="${idx}"><option value="Available" ${p.availability === "Available" ? "selected" : ""}>Available</option><option value="To Confirme" ${p.availability === "To Confirme" ? "selected" : ""}>To Confirme</option><option value="Fixed" ${p.availability === "Fixed" ? "selected" : ""}>Fixed</option><option value="Reserve" ${p.availability === "Reserve" ? "selected" : ""}>Reserve</option><option value="No Participate" ${p.availability === "No Participate" ? "selected" : ""}>No Participate</option><option value="No Show" ${p.availability === "No Show" ? "selected" : ""}>No Show</option></select></td>
-                <td><button class="saveCanyonModalBtn" data-idx="${idx}">Save</button></td>
-            `;
-            tbody.appendChild(row);
-        });
-        document.querySelectorAll('.saveCanyonModalBtn').forEach(btn => {
-            btn.addEventListener('click', async (e) => {
-                const idx = parseInt(btn.dataset.idx);
-                const teamSelect = document.querySelector(`.canyon-team[data-idx="${idx}"]`);
-                const zoneSelect = document.querySelector(`.canyon-zone[data-idx="${idx}"]`);
-                const availSelect = document.querySelector(`.canyon-availability[data-idx="${idx}"]`);
-                if (teamSelect && zoneSelect && availSelect) {
-                    players[idx].team = teamSelect.value;
-                    players[idx].zone = zoneSelect.value;
-                    players[idx].availability = availSelect.value;
-                    await updateAllRankings();
+            // Name
+            const tdName = document.createElement("td");
+            tdName.textContent = p.name || "";
+            row.appendChild(tdName);
+            // F1 Total Power
+            const tdF1 = document.createElement("td");
+            tdF1.textContent = formatNumber(p.f1Arena, 1);
+            row.appendChild(tdF1);
+            // Status (Availability)
+            const tdStatus = document.createElement("td");
+            const statusSelect = document.createElement("select");
+            const statusOptions = ["FIXED", "", "AVAILABLE T1", "AVAILABLE T2", "RESERVE T1", "RESERVE T2", "not available"];
+            statusOptions.forEach(opt => {
+                const option = document.createElement("option");
+                option.value = opt;
+                option.textContent = opt === "" ? "—" : opt;
+                if (p.availability === opt) option.selected = true;
+                statusSelect.appendChild(option);
+            });
+            statusSelect.addEventListener("change", (e) => {
+                p.availability = e.target.value;
+                updateAllRankings();
+            });
+            tdStatus.appendChild(statusSelect);
+            row.appendChild(tdStatus);
+            // Team
+            const tdTeam = document.createElement("td");
+            const teamSelect = document.createElement("select");
+            const teamOptions = ["", "T1", "R1", "T2", "R2"];
+            teamOptions.forEach(opt => {
+                const option = document.createElement("option");
+                option.value = opt;
+                option.textContent = opt === "" ? "None" : opt;
+                if (p.team === opt) option.selected = true;
+                teamSelect.appendChild(option);
+            });
+            teamSelect.addEventListener("change", (e) => {
+                const newTeam = e.target.value;
+                const counters = updateCanyonCounters();
+                const limitReached = (newTeam === "T1" && counters.t1 >= 20) ||
+                                     (newTeam === "R1" && counters.r1 >= 20) ||
+                                     (newTeam === "T2" && counters.t2 >= 20) ||
+                                     (newTeam === "R2" && counters.r2 >= 20);
+                if (limitReached && newTeam !== "") {
+                    alert("All places occupied for this team!");
+                    teamSelect.value = p.team;
+                    return;
+                }
+                p.team = newTeam;
+                updateAllRankings();
+            });
+            tdTeam.appendChild(teamSelect);
+            row.appendChild(tdTeam);
+            // Zone (con ANY ZONE)
+            const tdZone = document.createElement("td");
+            const zoneSelect = document.createElement("select");
+            const zoneOptions = ["None", "A", "B", "C", "D", "ANY ZONE"];
+            zoneOptions.forEach(opt => {
+                const option = document.createElement("option");
+                option.value = opt;
+                option.textContent = opt;
+                if (p.zone === opt) option.selected = true;
+                zoneSelect.appendChild(option);
+            });
+            zoneSelect.addEventListener("change", (e) => {
+                p.zone = e.target.value;
+                updateAllRankings();
+            });
+            tdZone.appendChild(zoneSelect);
+            row.appendChild(tdZone);
+            // Role
+            const tdRole = document.createElement("td");
+            const roleSelect = document.createElement("select");
+            const roleOptions = [
+                "JUMPER SUPPORT OTHERS PLAYERS",
+                "WILL TAKE CORE",
+                "4 WATER REFINERYS CLOSE TO ZOMBIE",
+                "1 MILITARY BASE 2 WATER REFINERYS",
+                "2 WATER REFINERYS AND HOSPITAL NEXT TO BASE",
+                "2 WATER REFINERYS AND HOSPITAL ENEMY BASE"
+            ];
+            roleOptions.forEach(opt => {
+                const option = document.createElement("option");
+                option.value = opt;
+                option.textContent = opt;
+                if (p.role === opt) option.selected = true;
+                roleSelect.appendChild(option);
+            });
+            roleSelect.addEventListener("change", (e) => {
+                p.role = e.target.value;
+                updateAllRankings();
+            });
+            tdRole.appendChild(roleSelect);
+            row.appendChild(tdRole);
+            // Clash Points (editable)
+            const tdClash = document.createElement("td");
+            const clashInput = document.createElement("input");
+            clashInput.type = "number";
+            clashInput.value = p.vsWeek + p.vs4Week;
+            clashInput.style.width = "100px";
+            clashInput.addEventListener("change", (e) => {
+                const newPoints = parseInt(e.target.value);
+                if (!isNaN(newPoints) && newPoints >= 0) {
+                    p.vsWeek = newPoints;
+                    updateAllRankings();
                 }
             });
+            tdClash.appendChild(clashInput);
+            row.appendChild(tdClash);
+            // Actions (Save button)
+            const tdActions = document.createElement("td");
+            const saveBtn = document.createElement("button");
+            saveBtn.textContent = "Save";
+            saveBtn.style.padding = "2px 6px";
+            saveBtn.addEventListener("click", () => {
+                updateAllRankings();
+                alert("Changes saved");
+            });
+            tdActions.appendChild(saveBtn);
+            row.appendChild(tdActions);
+            tbody.appendChild(row);
         });
-        const t1 = players.filter(p => p.team === "T1").length;
-        const r1 = players.filter(p => p.team === "R1").length;
-        const t2 = players.filter(p => p.team === "T2").length;
-        const r2 = players.filter(p => p.team === "R2").length;
-        document.getElementById("canyonModalStats").innerHTML = `<div class="stat-card">T1: ${t1}</div><div class="stat-card">R1: ${r1}</div><div class="stat-card">T2: ${t2}</div><div class="stat-card">R2: ${r2}</div>`;
+        updateCanyonCounters();
     }
 
-    document.getElementById("printCanyonPdfBtn")?.addEventListener("click", () => {
+    function exportCanyonToPDF() {
         const title = document.getElementById("reportTitle").value;
         const until = document.getElementById("untilDate").value;
-        const printContent = document.getElementById("canyonModalTable").cloneNode(true);
-        const w = window.open('', '_blank');
-        w.document.write(`
-            <html><head><title>Canyon Clash Roster</title>
-            <style>body{font-family:Arial;margin:20px;} table{border-collapse:collapse;width:100%;} th,td{border:1px solid #000;padding:5px;} h2{text-align:center;}</style>
-            </head><body><h2>${title} - Canyon Clash Roster</h2><p>Until: ${until}</p>${printContent.outerHTML}</body></html>
-        `);
-        w.document.close();
-        w.print();
-    });
+        const fontSize = document.getElementById("pdfFontSize").value + "px";
+        const columns = [];
+        if (document.getElementById("colName").checked) columns.push("Name");
+        if (document.getElementById("colF1").checked) columns.push("F1 Total Power");
+        if (document.getElementById("colStatus").checked) columns.push("Status");
+        if (document.getElementById("colTeam").checked) columns.push("Team");
+        if (document.getElementById("colZone").checked) columns.push("Zone");
+        if (document.getElementById("colRole").checked) columns.push("Role");
+        if (document.getElementById("colClashPoints").checked) columns.push("Clash Points");
+        
+        let canyonPlayers = getCanyonPlayers();
+        if (canyonTeamFilter !== "ALL") {
+            canyonPlayers = canyonPlayers.filter(p => p.team === canyonTeamFilter);
+        }
+        
+        let html = `<html><head><title>Canyon Clash Roster</title>
+            <style>
+                body { font-family: Arial, sans-serif; margin: 20px; color: black; }
+                h2 { text-align: center; }
+                .header { text-align: center; margin-bottom: 20px; }
+                table { border-collapse: collapse; width: 100%; font-size: ${fontSize}; }
+                th, td { border: 1px solid #000; padding: 5px; text-align: left; }
+                th { background-color: #ccc; }
+                tr:nth-child(even) { background-color: #f2f2f2; }
+                tr:nth-child(odd) { background-color: #ffffff; }
+            </style>
+        </head><body>
+        <div class="header"><h2>${title} - Canyon Clash Roster</h2><p>Until: ${until}</p></div>
+        <table><thead><tr>`;
+        columns.forEach(col => { html += `<th>${col}</th>`; });
+        html += `</tr></thead><tbody>`;
+        canyonPlayers.forEach(p => {
+            html += `<tr>`;
+            if (columns.includes("Name")) html += `<td>${p.name || ""}</td>`;
+            if (columns.includes("F1 Total Power")) html += `<td>${formatNumber(p.f1Arena, 1)}</td>`;
+            if (columns.includes("Status")) html += `<td>${p.availability || ""}</td>`;
+            if (columns.includes("Team")) html += `<td>${p.team || ""}</td>`;
+            if (columns.includes("Zone")) html += `<td>${p.zone || ""}</td>`;
+            if (columns.includes("Role")) html += `<td>${p.role || ""}</td>`;
+            if (columns.includes("Clash Points")) html += `<td>${formatNumber(p.vsWeek + p.vs4Week, 0)}</td>`;
+            html += `</tr>`;
+        });
+        html += `</tbody></table></body></html>`;
+        const win = window.open();
+        win.document.write(html);
+        win.document.close();
+        win.print();
+    }
 
-    // Goals apply
-    function applyVsThresholds() {
+    async function exportCanyonAsImage() {
+        const modalContent = document.querySelector("#canyonModal .modal-content");
+        const cloneModal = modalContent.cloneNode(true);
+        cloneModal.style.backgroundColor = "white";
+        cloneModal.style.color = "black";
+        const buttons = cloneModal.querySelectorAll("button");
+        buttons.forEach(btn => btn.style.display = "none");
+        const selects = cloneModal.querySelectorAll("select");
+        selects.forEach(sel => {
+            const span = document.createElement("span");
+            span.textContent = sel.options[sel.selectedIndex].text;
+            sel.parentNode.replaceChild(span, sel);
+        });
+        const table = cloneModal.querySelector("table");
+        if (table) {
+            table.style.borderCollapse = "collapse";
+            table.style.width = "100%";
+            const cells = table.querySelectorAll("td, th");
+            cells.forEach(cell => cell.style.border = "1px solid black");
+        }
+        document.body.appendChild(cloneModal);
+        try {
+            const canvas = await html2canvas(cloneModal, { scale: 2, backgroundColor: "#ffffff" });
+            const link = document.createElement("a");
+            link.download = "canyon_clash.png";
+            link.href = canvas.toDataURL();
+            link.click();
+        } catch (err) {
+            console.error("Error generating image:", err);
+            alert("Could not generate image. See console.");
+        } finally {
+            document.body.removeChild(cloneModal);
+        }
+    }
+
+    function applyCanyonFilter() {
+        canyonTeamFilter = document.getElementById("canyonTeamFilter").value;
+        renderCanyonModal();
+    }
+    function resetCanyonFilter() {
+        canyonTeamFilter = "ALL";
+        document.getElementById("canyonTeamFilter").value = "ALL";
+        renderCanyonModal();
+    }
+
+    // ---------- Eventos ----------
+    document.getElementById("openCanyonModalBtn")?.addEventListener("click", () => {
+        renderCanyonModal();
+        document.getElementById("canyonModal").style.display = "flex";
+    });
+    document.getElementById("closeModalBtn")?.addEventListener("click", () => {
+        document.getElementById("canyonModal").style.display = "none";
+    });
+    document.getElementById("applyCanyonFilterBtn")?.addEventListener("click", applyCanyonFilter);
+    document.getElementById("resetCanyonFilterBtn")?.addEventListener("click", resetCanyonFilter);
+    document.getElementById("exportCanyonPdfBtn")?.addEventListener("click", exportCanyonToPDF);
+    document.getElementById("exportCanyonImageBtn")?.addEventListener("click", exportCanyonAsImage);
+    document.getElementById("applyPdfSettingsBtn")?.addEventListener("click", () => {
+        alert("PDF settings applied. Use Print PDF button to generate report.");
+    });
+    document.getElementById("applyVsThresholdsBtn")?.addEventListener("click", () => {
         const newWeek = parseFloat(document.getElementById("minVsWeek").value);
         const new4Week = parseFloat(document.getElementById("minVs4Week").value);
         if (!isNaN(newWeek)) vsWeekMin = newWeek;
         if (!isNaN(new4Week)) vs4WeekMin = new4Week;
         updateStats();
         renderPlayersTable();
-    }
-    document.getElementById("applyVsThresholdsBtn")?.addEventListener("click", applyVsThresholds);
-
-    // Clear all checkboxes
+    });
     document.getElementById("clearChecksBtn")?.addEventListener("click", () => {
-        for (let key in checkboxState) {
-            checkboxState[key] = false;
-        }
-        renderPlayersTable(); // refrescar para mostrar cambios
+        for (let key in checkboxState) checkboxState[key] = false;
+        renderPlayersTable();
     });
 
-    // Modals init
-    const canyonModal = document.getElementById("canyonModal");
-    document.getElementById("openCanyonModalBtn")?.addEventListener("click", () => { renderCanyonModal(); canyonModal.style.display = "flex"; });
-    document.getElementById("closeModalBtn")?.addEventListener("click", () => canyonModal.style.display = "none");
-    document.getElementById("syncCanyonModalBtn")?.addEventListener("click", () => renderCanyonModal());
-    window.addEventListener("click", (e) => { if (e.target === canyonModal) canyonModal.style.display = "none"; });
-    window.addEventListener("click", (e) => { if (e.target === document.getElementById("filterModal")) document.getElementById("filterModal").style.display = "none"; });
-    window.addEventListener("click", (e) => { if (e.target === document.getElementById("playerModal")) document.getElementById("playerModal").style.display = "none"; });
-    window.addEventListener("click", (e) => { if (e.target === document.getElementById("ocrModal")) document.getElementById("ocrModal").style.display = "none"; });
-
-    // Initialization
+    // Inicialización
     async function initializeApp() {
         const loadedPlayers = await loadPlayersFromSheet();
         if (loadedPlayers && loadedPlayers.length) {
             players = loadedPlayers;
             players.forEach(p => {
-                if (!p.availability) p.availability = "Available";
-                if (!p.zone) p.zone = "A";
-                // Inicializar checkboxState para jugadores existentes (por si acaso)
+                if (!p.availability) p.availability = "";
+                if (!p.zone) p.zone = "None";
+                if (!p.role) p.role = "";
+                if (!p.team) p.team = "";
                 const key = p.name.trim().toUpperCase();
                 if (checkboxState[key] === undefined) checkboxState[key] = false;
             });
